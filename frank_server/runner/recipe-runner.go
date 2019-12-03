@@ -19,18 +19,24 @@ type RecipeRunner struct {
 func (s *RecipeRunner) Run(scraper scraper.RecipeScraper) {
 	c := colly.NewCollector()
 
-	c.OnHTML(mainSelectorRecipe, func(e *colly.HTMLElement) {
+	c.OnHTML(scraper.GetConfig().MainSelector, func(e *colly.HTMLElement) {
 
-		if scraper.IsIngredient(e) {
-			s.Recipe.AppendIngredient(normalizeString(e.Text))
+		// Try to add title
+		if title := scraper.TryGetTitle(e); title != "" {
+			s.Recipe.SetTitle(title)
+			return
 		}
 
-		if scraper.IsTitle(e) && s.Recipe.Title == "" {
-			s.Recipe.AddTitle(e.Text)
+		// Try to add ingredients
+		if ingredient := scraper.TryGetIngredient(e); ingredient != "" {
+			s.Recipe.AppendIngredient(ingredient)
+			return
 		}
 
-		if scraper.IsDirection(e) {
-			s.Recipe.AppendDirection(normalizeString(e.Text))
+		// Try to add directions
+		if direction := scraper.TryGetDirection(e); direction != "" {
+			s.Recipe.AppendDirection(direction)
+			return
 		}
 	})
 

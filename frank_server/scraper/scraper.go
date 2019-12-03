@@ -2,14 +2,26 @@ package scraper
 
 import "github.com/gocolly/colly"
 
+type RecipeScraperConfig struct {
+	MainSelector string
+}
+
 // RecipeScraper comment
 type RecipeScraper interface {
-	IsIngredient(*colly.HTMLElement) bool
-	IsTitle(*colly.HTMLElement) bool
-	IsDirection(*colly.HTMLElement) bool
+	TryGetIngredient(*colly.HTMLElement) string
+	TryGetTitle(*colly.HTMLElement) string
+	TryGetDirection(*colly.HTMLElement) string
+	GetConfig() RecipeScraperConfig
+}
+
+type SearchScraperConfig struct {
+	MainSelector string
+	SearchPath   string
+	Domain       string
 }
 
 // SearchScraper comment
 type SearchScraper interface {
-	ShouldVisitLink(*colly.HTMLElement) bool
+	TryGetRecipeLink(*colly.HTMLElement) string
+	GetConfig() SearchScraperConfig
 }

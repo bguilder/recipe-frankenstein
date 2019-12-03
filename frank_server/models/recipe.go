@@ -7,17 +7,20 @@ type Recipe struct {
 	Directions  []string
 }
 
+// AppendIngredient comment
 func (r *Recipe) AppendIngredient(ingredient string) {
-	if ingredient == "" {
-		return
-	}
 	r.Ingredients = append(r.Ingredients, ingredient)
 }
 
+// AppendDirection comment
 func (r *Recipe) AppendDirection(direction string) {
 	r.Directions = append(r.Directions, direction)
 }
 
-func (r *Recipe) AddTitle(title string) {
+// SetTitle comment
+func (r *Recipe) SetTitle(title string) {
+	if r.Title != "" {
+		return
+	}
 	r.Title = title
 }

@@ -3,6 +3,7 @@ package runner
 import (
 	"fmt"
 	"frank_server/scraper"
+	"frank_server/utils"
 	"log"
 
 	"github.com/gocolly/colly"
@@ -14,15 +15,21 @@ type SearchRunner struct {
 	RecipeName  string
 }
 
+func (s *SearchRunner) AppendRecipeLink(link string) {
+	if link != "" {
+		s.RecipeLinks = append(s.RecipeLinks, link)
+	}
+}
+
 // Run comment
 func (s *SearchRunner) Run(scraper scraper.SearchScraper) {
 	c := colly.NewCollector()
+	config := scraper.GetConfig()
 
-	c.OnHTML(mainSelectorSearch, func(e *colly.HTMLElement) {
-		if scraper.ShouldVisitLink(e) {
-			recipeLink := e.ChildAttr("*", "href")
-			s.RecipeLinks = append(s.RecipeLinks, recipeLink)
-			fmt.Printf("Recipe Name: %s\n Link: %s\n", normalizeString(e.Text), e.ChildAttr("*", "href"))
+	c.OnHTML(config.MainSelector, func(e *colly.HTMLElement) {
+		if link := scraper.TryGetRecipeLink(e); link != "" {
+			s.AppendRecipeLink(link)
+			fmt.Printf("Recipe Name: %s\n Link: %s\n", utils.NormalizeString(e.Text), e.ChildAttr("*", "href"))
 		}
 	})
 
@@ -35,7 +42,7 @@ func (s *SearchRunner) Run(scraper scraper.SearchScraper) {
 	})
 
 	c.OnResponse(func(r *colly.Response) {
-		fmt.Println("\n\n======Recipes List=======\n")
+		fmt.Print("\n\n======Recipes List=======\n")
 	})
 
 	c.OnScraped(func(r *colly.Response) {
@@ -43,5 +50,5 @@ func (s *SearchRunner) Run(scraper scraper.SearchScraper) {
 	})
 
 	// Start scraping
-	c.Visit(domain + searchPath + s.RecipeName + "&sort=re")
+	c.Visit(config.Domain + config.SearchPath + s.RecipeName + "&sort=re")
 }
