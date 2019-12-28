@@ -1,127 +1,57 @@
 package main
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
-	"frank_server/models"
-	"frank_server/runner"
-	"frank_server/scraper/allrecipes"
-	"frank_server/utils"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
-	"unicode"
+	"frank_server/postprocessor"
+	"io/ioutil"
+	"log"
+	"os"
 )
 
-const recipeName = "chicken and dumplings"
-const numberOfRecipes = 5
+const recipeName = "empanada"
+const numberOfRecipes = 8
 
 func main() {
-	fmt.Printf("Searching AllRecipes for: %s\n\n", recipeName)
-	searchRunner := runner.SearchRunner{RecipeName: utils.UrlFormat(recipeName)}
-	SearchScraper := allrecipes.SearchScraper{}
-
-	searchRunner.Run(SearchScraper)
-
-	recipes := []*models.Recipe{}
-
-	for i := 0; i < numberOfRecipes; i++ {
-		recipe := models.Recipe{}
-		recipeRunner := runner.RecipeRunner{Recipe: recipe, RecipeLink: searchRunner.RecipeLinks[i]}
-		RecipeScraper := allrecipes.RecipeScraper{}
-		recipeRunner.Run(RecipeScraper)
-		recipes = append(recipes, &recipeRunner.Recipe)
-		time.Sleep(2 * time.Second)
-	}
-
-	allIngredients := []string{}
-	for i := 0; i < len(recipes); i++ {
-		for x := 0; x < len(recipes[i].Ingredients); x++ {
-			allIngredients = append(allIngredients, recipes[i].Ingredients[x])
-		}
-	}
-	calculateWordFrequency(allIngredients)
+	ingredients := openIngredients("ingredients_fixtures/empanada.json")
+	sanitizer := postprocessor.NewSanitizer()
+	p := postprocessor.NewPostProcessor(sanitizer)
+	p.Run(ingredients)
 }
 
-func hasOmittedWord(word string) bool {
-	omittedWords := []string{"cup", "cups", "ounces", "ounce", "tablespoon", "tablespoons"}
-	for i := 0; i < len(omittedWords); i++ {
-		if strings.Contains(word, omittedWords[i]) {
-			return true
-		}
-		if !unicode.IsLetter([]rune(word)[0]) {
-			return true
-		}
+func openIngredients(file string) []string {
+	jsonFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
 	}
-	return false
+	fmt.Println("Successfully Opened users.json")
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var result []string
+	err = json.Unmarshal([]byte(byteValue), &result)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Result now: %+v", result)
+	return result
 }
 
-func calculateWordFrequency(allIngredients []string) {
+func writeToFile(ingredients []string) {
+	file, err := os.OpenFile("raw_ingredients.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
-	allWordsDict := map[string]int{}
-	allIngredientsArr := []string{}
-	// split string
-	for i := 0; i < len(allIngredients); i++ {
-		splitString := strings.Split(allIngredients[i], " ")
-
-		// remove numbers from the slice
-		for x := 0; x < len(splitString); x++ {
-			if _, err := strconv.Atoi(splitString[x]); err == nil {
-				splitString = append(splitString[:x], splitString[x+1:]...)
-			}
-		}
-
-		// remove certain words from slice
-		for x := 0; x < len(splitString); x++ {
-			if hasOmittedWord(splitString[x]) {
-				splitString = append(splitString[:x], splitString[x+1:]...)
-				x--
-			}
-		}
-
-		combineString := strings.Join(splitString, " ")
-		allIngredientsArr = append(allIngredientsArr, combineString)
-
-		for x := 0; x < len(splitString); x++ {
-			if _, ok := allWordsDict[splitString[x]]; ok {
-				allWordsDict[splitString[x]]++
-			} else {
-				allWordsDict[splitString[x]] = 1
-			}
-		}
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
 	}
 
-	fmt.Printf("\n\n\n=================================Total ingredients list!=================================\n\n\n")
+	datawriter := bufio.NewWriter(file)
 
-	for i := 0; i < len(allIngredientsArr); i++ {
-		fmt.Printf("- %v\n", allIngredientsArr[i])
+	for _, data := range ingredients {
+		_, _ = datawriter.WriteString(data + "\n")
 	}
-	fmt.Printf("\n\n\n=================================Ingredients By Frequency!=================================\n\n\n")
-
-	pairList := rankByWordCount(allWordsDict)
-	for i := 0; i < len(pairList); i++ {
-		fmt.Printf("ingredient: %v - %v\n", pairList[i].Key, pairList[i].Value)
-	}
+	datawriter.Flush()
+	file.Close()
 }
-
-func rankByWordCount(wordFrequencies map[string]int) PairList {
-	pl := make(PairList, len(wordFrequencies))
-	i := 0
-	for k, v := range wordFrequencies {
-		pl[i] = Pair{k, v}
-		i++
-	}
-	sort.Sort(sort.Reverse(pl))
-	return pl
-}
-
-type Pair struct {
-	Key   string
-	Value int
-}
-
-type PairList []Pair
-
-func (p PairList) Len() int           { return len(p) }
-func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
-func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
