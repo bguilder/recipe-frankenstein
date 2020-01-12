@@ -15,18 +15,26 @@ func NewPostProcessor(sanitizer Sanitizer) PostProcessor {
 	return PostProcessor{sanitizer: NewSanitizer()}
 }
 
-func (p *PostProcessor) Run(ingredients []string) {
-	p.calculateWordFrequency(ingredients)
+func (p *PostProcessor) Run(ingredients []string) []string {
+	return p.calculateWordFrequency(ingredients)
 }
 
-func (p *PostProcessor) calculateWordFrequency(allIngredients []string) {
+func (p *PostProcessor) calculateWordFrequency(allIngredients []string) []string {
 
 	allWordsDict := map[string]int{}
 	allIngredientsArr := []string{}
 	allIngredientsDict := map[string]int{}
 	// split string
 	for i := 0; i < len(allIngredients); i++ {
-		splitString := strings.Split(allIngredients[i], " ")
+		initialSplit := strings.Split(allIngredients[i], " ")
+
+		splitString := []string{}
+
+		for _, word := range initialSplit {
+			ingredient := p.sanitizer.RemovePunctuation(word)
+			ingredient = p.sanitizer.ToLower(ingredient)
+			splitString = append(splitString, ingredient)
+		}
 
 		// remove numbers from the slice
 		for x := 0; x < len(splitString); x++ {
@@ -81,6 +89,8 @@ func (p *PostProcessor) calculateWordFrequency(allIngredients []string) {
 	for i := 0; i < len(pairList); i++ {
 		fmt.Printf("ingredient: %v - %v\n", pairList[i].Key, pairList[i].Value)
 	}
+
+	return allIngredientsArr
 }
 
 func rankByMultipleWordsCount(wordFrequencies map[string]int) PairList {

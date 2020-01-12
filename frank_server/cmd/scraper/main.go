@@ -36,7 +36,6 @@ func openIngredients(file string) []string {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("Result now: %+v", result)
 	return result
 }
 

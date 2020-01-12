@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"unicode"
 )
 
@@ -14,11 +15,11 @@ type Sanitizer struct {
 }
 
 func loadStopWords() map[string]interface{} {
-	jsonFile, err := os.Open("postprocessor/stop_words.json")
+	jsonFile, err := os.Open("../../postprocessor/stop_words.json")
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Successfully Opened users.json")
+	fmt.Println("Successfully Opened stop_words.json")
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
@@ -29,7 +30,6 @@ func loadStopWords() map[string]interface{} {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("Result now: %+v", result)
 	return result
 }
 
@@ -52,9 +52,23 @@ func (s *Sanitizer) hasStopWord(word string) bool {
 			return true
 		}
 		if _, ok := s.StopWords[word]; ok {
-			fmt.Printf("FOUND STOP WORD!!!: %s", word)
 			return true
 		}
 	}
 	return false
+}
+
+func (s *Sanitizer) RemovePunctuation(word string) string {
+	runes := []rune(word)
+	for i := 0; i < len(runes); i++ {
+		if unicode.IsPunct(runes[i]) {
+			runes = append(runes[:i], runes[i+1:]...)
+			i--
+		}
+	}
+	return string(runes)
+}
+
+func (s *Sanitizer) ToLower(word string) string {
+	return strings.ToLower(word)
 }
