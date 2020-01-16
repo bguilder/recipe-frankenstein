@@ -11,31 +11,36 @@ import (
 
 // RecipeRunner comment
 type RecipeRunner struct {
-	Recipe     models.Recipe
-	RecipeLink string
+	recipe     models.Recipe
+	recipeLink string
+	scraper    scraper.RecipeScraper
+}
+
+func NewRecipeRunner(recipeURL string, scraper scraper.RecipeScraper) RecipeRunner {
+	return RecipeRunner{recipe: models.Recipe{}, recipeLink: recipeURL, scraper: scraper}
 }
 
 // Run comment
-func (s *RecipeRunner) Run(scraper scraper.RecipeScraper) {
+func (s *RecipeRunner) run() {
 	c := colly.NewCollector()
 
-	c.OnHTML(scraper.GetConfig().MainSelector, func(e *colly.HTMLElement) {
+	c.OnHTML(s.scraper.GetConfig().MainSelector, func(e *colly.HTMLElement) {
 
 		// Try to add title
-		if title := scraper.TryGetTitle(e); title != "" {
-			s.Recipe.SetTitle(title)
+		if title := s.scraper.TryGetTitle(e); title != "" {
+			s.recipe.SetTitle(title)
 			return
 		}
 
 		// Try to add ingredients
-		if ingredient := scraper.TryGetIngredient(e); ingredient != "" {
-			s.Recipe.AppendIngredient(ingredient)
+		if ingredient := s.scraper.TryGetIngredient(e); ingredient != "" {
+			s.recipe.AppendIngredient(ingredient)
 			return
 		}
 
 		// Try to add directions
-		if direction := scraper.TryGetDirection(e); direction != "" {
-			s.Recipe.AppendDirection(direction)
+		if direction := s.scraper.TryGetDirection(e); direction != "" {
+			s.recipe.AppendDirection(direction)
 			return
 		}
 	})
@@ -54,17 +59,22 @@ func (s *RecipeRunner) Run(scraper scraper.RecipeScraper) {
 
 	c.OnScraped(func(r *colly.Response) {
 		fmt.Printf("\n\n\n============Recipe============\n\n\n")
-		fmt.Printf("Title: %s\n\n", s.Recipe.Title)
+		fmt.Printf("Title: %s\n\n", s.recipe.Title)
 		fmt.Printf("Directions\n\n")
-		for i := 0; i < len(s.Recipe.Directions); i++ {
-			fmt.Printf("Step %v: %s\n", i+1, s.Recipe.Directions[i])
+		for i := 0; i < len(s.recipe.Directions); i++ {
+			fmt.Printf("Step %v: %s\n", i+1, s.recipe.Directions[i])
 		}
 		fmt.Printf("Ingredients\n\n")
-		for i := 0; i < len(s.Recipe.Ingredients); i++ {
-			fmt.Printf("%s\n", s.Recipe.Ingredients[i])
+		for i := 0; i < len(s.recipe.Ingredients); i++ {
+			fmt.Printf("%s\n", s.recipe.Ingredients[i])
 		}
 	})
 
 	// Start scraping
-	c.Visit(s.RecipeLink)
+	c.Visit(s.recipeLink)
+}
+
+func (s *RecipeRunner) Run() *models.Recipe {
+	s.run()
+	return &s.recipe
 }

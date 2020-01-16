@@ -15,11 +15,11 @@ func NewPostProcessor(sanitizer Sanitizer) PostProcessor {
 	return PostProcessor{sanitizer: NewSanitizer()}
 }
 
-func (p *PostProcessor) Run(ingredients []string) []string {
+func (p *PostProcessor) Run(ingredients []string) PairList {
 	return p.calculateWordFrequency(ingredients)
 }
 
-func (p *PostProcessor) calculateWordFrequency(allIngredients []string) []string {
+func (p *PostProcessor) calculateWordFrequency(allIngredients []string) PairList {
 
 	allWordsDict := map[string]int{}
 	allIngredientsArr := []string{}
@@ -70,27 +70,27 @@ func (p *PostProcessor) calculateWordFrequency(allIngredients []string) []string
 
 	}
 
-	fmt.Printf("\n\n\n=================================Total ingredients list!=================================\n\n\n")
+	fmt.Printf("\n\n\n=================================allIngredientsArr!=================================\n\n\n")
 
 	for i := 0; i < len(allIngredientsArr); i++ {
 		fmt.Printf("- %v\n", allIngredientsArr[i])
 	}
 
-	fmt.Printf("\n\n\n=================================Total ingredients list 2!=================================\n\n\n")
+	fmt.Printf("\n\n\n=================================pairList1!=================================\n\n\n")
 
 	pairList1 := rankByMultipleWordsCount(allIngredientsDict)
 	for i := 0; i < len(pairList1); i++ {
 		fmt.Printf("ingredient: %v - %v\n", pairList1[i].Key, pairList1[i].Value)
 	}
 
-	fmt.Printf("\n\n\n=================================Ingredients By Frequency!=================================\n\n\n")
+	fmt.Printf("\n\n\n=================================pairList!=================================\n\n\n")
 
 	pairList := rankByWordCount(allWordsDict)
 	for i := 0; i < len(pairList); i++ {
 		fmt.Printf("ingredient: %v - %v\n", pairList[i].Key, pairList[i].Value)
 	}
 
-	return allIngredientsArr
+	return pairList1
 }
 
 func rankByMultipleWordsCount(wordFrequencies map[string]int) PairList {

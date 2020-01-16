@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"unicode"
@@ -15,7 +16,13 @@ type Sanitizer struct {
 }
 
 func loadStopWords() map[string]interface{} {
-	jsonFile, err := os.Open("../../postprocessor/stop_words.json")
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(path)
+
+	jsonFile, err := os.Open("./postprocessor/stop_words.json")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -52,6 +59,7 @@ func (s *Sanitizer) hasStopWord(word string) bool {
 			return true
 		}
 		if _, ok := s.StopWords[word]; ok {
+			fmt.Printf("has stop word... %s", word)
 			return true
 		}
 	}

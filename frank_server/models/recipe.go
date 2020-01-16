@@ -1,10 +1,17 @@
 package models
 
+import "frank_server/postprocessor"
+
 // Recipe comment
 type Recipe struct {
 	Title       string
 	Ingredients []string
 	Directions  []string
+}
+
+type RecipesView struct {
+	Recipes     []*Recipe
+	Ingredients postprocessor.PairList
 }
 
 // AppendIngredient comment

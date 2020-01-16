@@ -11,23 +11,24 @@ import (
 
 // SearchRunner comment
 type SearchRunner struct {
-	RecipeLinks []string
-	RecipeName  string
+	recipeLinks []string
+	recipeName  string
+	scraper     scraper.SearchScraper
 }
 
 func (s *SearchRunner) AppendRecipeLink(link string) {
 	if link != "" {
-		s.RecipeLinks = append(s.RecipeLinks, link)
+		s.recipeLinks = append(s.recipeLinks, link)
 	}
 }
 
 // Run comment
-func (s *SearchRunner) Run(scraper scraper.SearchScraper) {
+func (s *SearchRunner) run() {
 	c := colly.NewCollector()
-	config := scraper.GetConfig()
+	config := s.scraper.GetConfig()
 
 	c.OnHTML(config.MainSelector, func(e *colly.HTMLElement) {
-		if link := scraper.TryGetRecipeLink(e); link != "" {
+		if link := s.scraper.TryGetRecipeLink(e); link != "" {
 			s.AppendRecipeLink(link)
 			fmt.Printf("Recipe Name: %s\n Link: %s\n", utils.NormalizeString(e.Text), e.ChildAttr("*", "href"))
 		}
@@ -50,5 +51,10 @@ func (s *SearchRunner) Run(scraper scraper.SearchScraper) {
 	})
 
 	// Start scraping
-	c.Visit(config.Domain + config.SearchPath + s.RecipeName + "&sort=re")
+	c.Visit(config.Domain + config.SearchPath + s.recipeName + "&sort=re")
+}
+
+func (s *SearchRunner) Run() []string {
+	s.run()
+	return s.recipeLinks
 }
