@@ -1,31 +1,44 @@
 <template>
-	<div class="hello">
-		<h1>Empenada Recipes</h1>
-		<ul>
-			<li	v-for="(item, index) in recipes" :key="index">
-			<strong>{{ item.Title }}</strong><br>
-			<strong>Ingredients</strong>
-			<ul>
-				<li	v-for="(ing, index) in item.Ingredients" :key="index">
-				{{ ing }}<br>
-				</li>
-			</ul>
-			<strong>Directions</strong>
-			<ul>
-				<li	v-for="(dir, index) in item.Directions" :key="index">
-				{{index+1}}. {{ dir }}<br>
-				</li>
-			</ul>
-			<hr>
-			</li>
-		</ul>
-		<h1>Empenada Ingredients</h1>
-		<ul>
-			<li	v-for="(item, index) in ingredients" :key="index">
-			<strong>{{ item.Key }}</strong> - <strong>{{ item.Value }}</strong><br>
-			</li>
-		</ul>
-	</div>
+	<v-container fluid text-wrap>
+		<v-row             
+            justify="space-around">
+			<v-col cols="6">
+				<h2 class="display-1 font-weight-bold mb-2">Recipes</h2>
+				<div
+				v-for="(item, index) in recipes"
+				:key="index"
+			>
+			<v-card>
+				<v-card-title v-text="item.Title"></v-card-title>
+				<v-card-title>Ingredients</v-card-title>
+				<v-card-subtitle
+				v-for="(ing, i) in item.Ingredients"
+				:key="i"
+			> {{ ing }}
+			</v-card-subtitle>
+				<v-card-title>Directions</v-card-title>
+				<v-card-subtitle
+				v-for="(dir, ind) in item.Directions"
+				:key="ind + 100"
+			> {{ind + 1}}. {{ dir }}
+			</v-card-subtitle>
+			</v-card>
+			<br>
+			</div>
+			</v-col>
+			<v-col cols="6">
+			<h1 class="display-1 font-weight-bold mb-2">Ingredients</h1>
+			<div
+				v-for="(item, indexs) in ingredients"
+				:key="indexs"
+			>
+				{{item.Key}} 
+				{{item.Value}}
+
+			</div>
+			</v-col>
+		</v-row>
+	</v-container>
 </template>
 
 <script lang="ts">
@@ -54,20 +67,3 @@ export default Vue.extend({
 	}
 });
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-	margin: 40px 0 0;
-}
-ul {
-	list-style-type: none;
-	padding: 0;
-}
-li {
-	margin: 0 10px;
-}
-a {
-	color: #42b983;
-}
-</style>

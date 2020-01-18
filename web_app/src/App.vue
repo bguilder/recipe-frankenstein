@@ -1,7 +1,24 @@
 <template>
-  <div id="app">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+  <v-app>
+    <v-app-bar
+      app
+      color="primary"
+      dark
+    >
+	<h2 class="display-1 font-weight-bold">Recipe Frankenstein</h2>
+	<v-spacer></v-spacer>
+	<v-col cols="12" sm="6" md="3">
+ <v-text-field 
+	label="Search"
+    filled hide-details>
+	</v-text-field>
+		</v-col>
+    </v-app-bar>
+
+    <v-content>
+      <HelloWorld/>
+    </v-content>
+  </v-app>
 </template>
 
 <script lang="ts">
@@ -9,20 +26,14 @@ import Vue from 'vue';
 import HelloWorld from './components/HelloWorld.vue';
 
 export default Vue.extend({
-  name: 'app',
+  name: 'App',
+
   components: {
-    HelloWorld
-  }
+    HelloWorld,
+  },
+
+  data: () => ({
+    //
+  }),
 });
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
