@@ -10,14 +10,20 @@
 				justify="start"
 			>
 				<v-col cols="12">
-					<h2 class="font-weight-bold">Recipe Frankenstein</h2>
+					<v-btn
+						large
+						color="white"
+						text
+						@click="reset"
+						class="pa-2"
+					>Recipe Frankenstein</v-btn>
 				</v-col>
 			</v-row>
 		</v-app-bar>
 
 		<template v-if="searching">
 			<v-content>
-				<HelloWorld v-bind:searchInput="searchInput" />
+				<HelloWorld v-bind:search="search" />
 			</v-content>
 		</template>
 		<template v-else>
@@ -55,14 +61,23 @@
 								xs="2"
 							>
 								<v-row>
-									<v-text-field
-										label="Search..."
-										hide-details
-										single-line
-										outlined
-										rounded
-										v-model="searchInput"
-									></v-text-field>
+									<v-col cols="9">
+										<v-text-field
+											label="Search Recipes..."
+											outlined
+											rounded
+											v-model="search.searchInput"
+										></v-text-field>
+									</v-col>
+									<v-col cols="3">
+										<v-text-field
+											label="Count"
+											outlined
+											rounded
+											type="number"
+											v-model="search.recipeCount"
+										></v-text-field>
+									</v-col>
 								</v-row>
 								<v-row
 									align="center"
@@ -72,7 +87,7 @@
 										color="primary"
 										text
 										@click="submit"
-										class="pa-7"
+										class="pa-2"
 									>Submit</v-btn>
 								</v-row>
 
@@ -82,6 +97,8 @@
 				</v-row>
 			</v-container>
 		</template>
+		<footer class="caption font-weight-thin text-center">Icon made by Freepik from www.flaticon.com
+			<br>2020 </footer>
 	</v-app>
 </template>
 
@@ -100,12 +117,19 @@ export default Vue.extend({
 	data() {
 		return {
 			searching: false,
-			searchInput: null
+			search: {
+				searchInput: null,
+				recipeCount: 1
+			}
 		};
 	},
 	methods: {
 		submit() {
 			this.searching = true;
+		},
+		reset() {
+			this.searching = false;
+			this.search.searchInput = null;
 		}
 	}
 });

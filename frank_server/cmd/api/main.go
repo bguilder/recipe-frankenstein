@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"frank_server/models"
 	"frank_server/postprocessor"
 	"frank_server/runner"
@@ -9,14 +10,14 @@ import (
 	"frank_server/utils"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
-const recipeName = "empanada"
-const numberOfRecipes = 10
+const numberOfRecipes = 1
 
 var cachedRecipes []byte
 
@@ -39,7 +40,7 @@ func newRouter() *mux.Router {
 	)
 
 	router.Handle("/example", http.HandlerFunc(handleExampleIngredients))
-	router.Handle("/search", http.HandlerFunc(handleSearch))
+	router.Handle("/search/{recipe}/{count}", http.HandlerFunc(handleSearch)) //.Queries("count")
 	return router
 }
 
@@ -60,14 +61,19 @@ func serve(router *mux.Router) {
 }
 
 func handleSearch(w http.ResponseWriter, r *http.Request) {
-	if cachedRecipes != nil {
-		log.Printf("Reading from cache: %s", string(cachedRecipes))
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(cachedRecipes)
-		return
-	}
+	// if cachedRecipes != nil {
+	// 	log.Printf("Reading from cache: %s", string(cachedRecipes))
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	w.Write(cachedRecipes)
+	// 	return
+	// }
+	vars := mux.Vars(r)
+	recipeName := vars["recipe"]
+	recipeCount, _ := strconv.Atoi(vars["count"])
+	fmt.Printf("recipeName!!!!! %s", recipeName)
+	fmt.Printf("recipeCount!!!!! %v", recipeCount)
 
-	runner := runner.NewRunner(recipeName, numberOfRecipes, &allrecipes.SearchScraper{}, &allrecipes.RecipeScraper{})
+	runner := runner.NewRunner(recipeName, recipeCount, &allrecipes.SearchScraper{}, &allrecipes.RecipeScraper{})
 	recipes := runner.Run()
 	ing := formatIngredients(recipes)
 	log.Printf("ran pp: %+v", ing)

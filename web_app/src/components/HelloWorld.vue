@@ -4,41 +4,48 @@
 		fluid
 		text-wrap
 	>
-		<v-row justify="space-around">
+		<v-row>
 			<v-col cols="6">
 				<h2 class="display-1 font-weight-bold mb-2">Recipes</h2>
-				<div
-					v-for="(item, index) in recipes"
-					:key="index"
-				>
-					<v-card>
-						<v-card-title v-text="item.Title"></v-card-title>
-						<v-card-title>Ingredients</v-card-title>
-						<v-card-subtitle
-							v-for="(ing, i) in item.Ingredients"
-							:key="i"
-						> {{ ing }}
-						</v-card-subtitle>
-						<v-card-title>Directions</v-card-title>
-						<v-card-subtitle
-							v-for="(dir, ind) in item.Directions"
-							:key="ind + 100"
-						> {{ind + 1}}. {{ dir }}
-						</v-card-subtitle>
-					</v-card>
+				<v-expansion-panels>
+					<v-expansion-panel
+						v-for="(item, index) in recipes"
+						:key="index"
+					>
+						<v-expansion-panel-header>{{item.Title}}</v-expansion-panel-header>
+						<v-expansion-panel-content>
+							<v-card-title>Ingredients</v-card-title>
+							<v-card-subtitle
+								v-for="(ing, i) in item.Ingredients"
+								:key="i"
+							> {{ ing }}
+							</v-card-subtitle>
+							<v-card-title>Directions</v-card-title>
+							<v-card-subtitle
+								v-for="(dir, ind) in item.Directions"
+								:key="ind + 100"
+							> {{ind + 1}}. {{ dir }}
+							</v-card-subtitle>
+						</v-expansion-panel-content>
+					</v-expansion-panel>
 					<br>
-				</div>
+				</v-expansion-panels>
 			</v-col>
 			<v-col cols="6">
-				<h1 class="display-1 font-weight-bold mb-2">Ingredients</h1>
-				<div
-					v-for="(item, indexs) in ingredients"
-					:key="indexs"
-				>
-					{{item.Key}}
-					{{item.Value}}
+				<div class="sticky">
+					<h1 class="display-1 font-weight-bold mb-2">Ingredients</h1>
+					<v-card class="pa-5">
+						<div
+							v-for="(item, indexs) in ingredients"
+							:key="indexs"
+						>
+							{{item.Key}}
+							{{item.Value}}
 
+						</div>
+					</v-card>
 				</div>
+
 			</v-col>
 		</v-row>
 	</v-container>
@@ -69,7 +76,7 @@ export default Vue.extend({
 	name: "HelloWorld",
 	props: {
 		msg: String,
-		searchInput: String
+		search: Object
 	},
 	data() {
 		return {
@@ -77,13 +84,19 @@ export default Vue.extend({
 			recipes: null
 		};
 	},
+
 	mounted() {
 		// axios.get("http://127.0.0.1:8088/example").then(response => {
 		// 	this.messageEx = response.data;
 		// });
-		console.log("searchInput" + this.searchInput);
+		console.log("searchInput" + JSON.stringify(this.search));
 		axios
-			.get("http://127.0.0.1:8088/search/" + this.searchInput)
+			.get(
+				"http://127.0.0.1:8088/search/" +
+					this.search.searchInput +
+					"/" +
+					this.search.recipeCount
+			)
 			.then(response => {
 				this.recipes = response.data.Recipes;
 				this.ingredients = response.data.Ingredients;
@@ -91,3 +104,17 @@ export default Vue.extend({
 	}
 });
 </script>
+
+<style scoped>
+.sticky {
+	position: -webkit-sticky;
+	position: sticky;
+	top: 4rem;
+	max-height: 80vh;
+	overflow: auto;
+}
+/* .scroll {
+	max-height: 90%;
+	overflow: auto;
+} */
+</style>

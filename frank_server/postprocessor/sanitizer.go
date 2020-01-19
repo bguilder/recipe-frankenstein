@@ -22,7 +22,7 @@ func loadStopWords() map[string]interface{} {
 	}
 	fmt.Println(path)
 
-	jsonFile, err := os.Open("./postprocessor/stop_words.json")
+	jsonFile, err := os.Open("./stop_words.json")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -55,8 +55,10 @@ func (s *Sanitizer) hasStopWord(word string) bool {
 
 	for i := 0; i < len(s.StopWords); i++ {
 		// Make sure the first characters is a letter
-		if !unicode.IsLetter([]rune(word)[0]) {
-			return true
+		if word != "" {
+			if !unicode.IsLetter([]rune(word)[0]) {
+				return true
+			}
 		}
 		if _, ok := s.StopWords[word]; ok {
 			fmt.Printf("has stop word... %s", word)
