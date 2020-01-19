@@ -1,5 +1,6 @@
-<template>
+<template >
 	<v-container
+		v-if="ingredients"
 		fluid
 		text-wrap
 	>
@@ -41,6 +42,23 @@
 			</v-col>
 		</v-row>
 	</v-container>
+	<v-container
+		v-else
+		fluid
+		fill-height
+	>
+		<v-row
+			align="center"
+			justify="center"
+		>
+			<v-progress-circular
+				size="100"
+				width="10"
+				indeterminate
+				color="green"
+			></v-progress-circular>
+		</v-row>
+	</v-container>
 </template>
 
 <script lang="ts">
@@ -63,6 +81,7 @@ export default Vue.extend({
 		// axios.get("http://127.0.0.1:8088/example").then(response => {
 		// 	this.messageEx = response.data;
 		// });
+		console.log("searchInput" + this.searchInput);
 		axios
 			.get("http://127.0.0.1:8088/search/" + this.searchInput)
 			.then(response => {

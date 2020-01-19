@@ -15,48 +15,73 @@
 			</v-row>
 		</v-app-bar>
 
-		<v-content v-if="searchInput">
-			<HelloWorld v-bind:searchInput="searchInput" />
-		</v-content>
-		<v-container
-			fluid
-			fill-height
-		>
-			<v-row no-gutters>
-				<v-col>
-					<v-row
-						align="center"
-						justify="center"
-					>
-						<v-col
-							cols="12"
-							class="pa-2"
+		<template v-if="searching">
+			<v-content>
+				<HelloWorld v-bind:searchInput="searchInput" />
+			</v-content>
+		</template>
+		<template v-else>
+			<v-container
+				fluid
+				fill-height
+			>
+				<v-row no-gutters>
+					<v-col>
+						<v-row
+							align="center"
+							justify="center"
 						>
-							<v-img
-								contain
-								max-height="125"
-								src="./assets/frankenstein.png"
-							></v-img>
-						</v-col>
-					</v-row>
-					<v-row
-						align="baseline"
-						justify="center"
-					>
-						<v-col
-							class="pa-2"
-							cols="8"
-							lg="5"
-							md="5"
-							sm="5"
-							xs="2"
+							<v-col
+								cols="12"
+								class="pa-2"
+							>
+								<v-img
+									contain
+									max-height="125"
+									src="./assets/frankenstein.png"
+								></v-img>
+							</v-col>
+						</v-row>
+						<v-row
+							align="center"
+							justify="center"
 						>
-							<SearchBar />
-						</v-col>
-					</v-row>
-				</v-col>
-			</v-row>
-		</v-container>
+							<v-col
+								class="pa-2 text-xs-center"
+								cols="8"
+								lg="5"
+								md="5"
+								sm="5"
+								xs="2"
+							>
+								<v-row>
+									<v-text-field
+										label="Search..."
+										hide-details
+										single-line
+										outlined
+										rounded
+										v-model="searchInput"
+									></v-text-field>
+								</v-row>
+								<v-row
+									align="center"
+									justify="center"
+								>
+									<v-btn
+										color="primary"
+										text
+										@click="submit"
+										class="pa-7"
+									>Submit</v-btn>
+								</v-row>
+
+							</v-col>
+						</v-row>
+					</v-col>
+				</v-row>
+			</v-container>
+		</template>
 	</v-app>
 </template>
 
@@ -69,14 +94,19 @@ export default Vue.extend({
 	name: "App",
 
 	components: {
-		HelloWorld,
-		SearchBar
+		HelloWorld
 	},
 
 	data() {
 		return {
+			searching: false,
 			searchInput: null
 		};
+	},
+	methods: {
+		submit() {
+			this.searching = true;
+		}
 	}
 });
 </script>
