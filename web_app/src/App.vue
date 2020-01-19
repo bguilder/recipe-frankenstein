@@ -34,7 +34,7 @@
 						>
 							<v-img
 								contain
-								aspect-ratio="3"
+								max-height="125"
 								src="./assets/frankenstein.png"
 							></v-img>
 						</v-col>
