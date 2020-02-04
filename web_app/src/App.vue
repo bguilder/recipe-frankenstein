@@ -98,7 +98,7 @@
 			</v-container>
 		</template>
 		<footer class="caption font-weight-thin text-center">Icon made by Freepik from www.flaticon.com
-			<br>2020 </footer>
+			<br>v0.1.0-alpha</footer>
 	</v-app>
 </template>
 

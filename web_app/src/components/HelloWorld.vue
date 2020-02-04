@@ -86,15 +86,11 @@ export default Vue.extend({
 	},
 
 	mounted() {
-		// axios.get("http://127.0.0.1:8088/example").then(response => {
-		// 	this.messageEx = response.data;
-		// });
-		console.log("searchInput" + JSON.stringify(this.search));
 		axios
 			.get(
-				"http://127.0.0.1:8088/search/" +
+				"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
 					this.search.searchInput +
-					"/" +
+					"&count=" +
 					this.search.recipeCount
 			)
 			.then(response => {
@@ -113,8 +109,4 @@ export default Vue.extend({
 	max-height: 80vh;
 	overflow: auto;
 }
-/* .scroll {
-	max-height: 90%;
-	overflow: auto;
-} */
 </style>
