@@ -11,13 +11,12 @@ import (
 
 // RecipeRunner comment
 type RecipeRunner struct {
-	recipe     models.Recipe
-	recipeLink string
-	scraper    scraper.RecipeScraper
+	recipe  models.Recipe
+	scraper scraper.RecipeScraper
 }
 
 func NewRecipeRunner(recipeURL string, scraper scraper.RecipeScraper) RecipeRunner {
-	return RecipeRunner{recipe: models.Recipe{}, recipeLink: recipeURL, scraper: scraper}
+	return RecipeRunner{recipe: models.Recipe{URL: recipeURL}, scraper: scraper}
 }
 
 // Run comment
@@ -71,7 +70,7 @@ func (s *RecipeRunner) run() {
 	})
 
 	// Start scraping
-	c.Visit(s.recipeLink)
+	c.Visit(s.recipe.URL)
 }
 
 func (s *RecipeRunner) Run() *models.Recipe {

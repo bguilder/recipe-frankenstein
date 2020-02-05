@@ -5,7 +5,6 @@ import (
 	"frank_server/scraper"
 	"frank_server/scraper/allrecipes"
 	"frank_server/utils"
-	"time"
 )
 
 // Runner is the main runner
@@ -45,7 +44,6 @@ func (r *Runner) fetchRecipes(recipeURLs []string) []*models.Recipe {
 		recipeRunner := NewRecipeRunner(recipeURLs[i], allrecipes.RecipeScraper{})
 		result := recipeRunner.Run()
 		recipes = append(recipes, result)
-		time.Sleep(100 * time.Millisecond)
 	}
 	return recipes
 }

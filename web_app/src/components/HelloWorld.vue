@@ -13,6 +13,7 @@
 						:key="index"
 					>
 						<v-expansion-panel-header>{{item.Title}}</v-expansion-panel-header>
+						<v-expansion-panel-content><a v-bind:href="item.URL">{{item.URL}}</a></v-expansion-panel-content>
 						<v-expansion-panel-content>
 							<v-card-title>Ingredients</v-card-title>
 							<v-card-subtitle

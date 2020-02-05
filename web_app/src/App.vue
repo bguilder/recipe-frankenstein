@@ -16,7 +16,7 @@
 						text
 						@click="reset"
 						class="pa-2"
-					>Recipe Frankenstein</v-btn>
+					> Recipe Frankenstein</v-btn>
 				</v-col>
 			</v-row>
 		</v-app-bar>
@@ -98,7 +98,8 @@
 			</v-container>
 		</template>
 		<footer class="caption font-weight-thin text-center">Icon made by Freepik from www.flaticon.com
-			<br>v0.1.0-alpha</footer>
+			<br>v0.1.0-alpha<br>
+		</footer>
 	</v-app>
 </template>
 

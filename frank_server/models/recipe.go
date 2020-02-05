@@ -7,6 +7,7 @@ type Recipe struct {
 	Title       string
 	Ingredients []string
 	Directions  []string
+	URL         string
 }
 
 type RecipesView struct {
@@ -22,6 +23,14 @@ func (r *Recipe) AppendIngredient(ingredient string) {
 // AppendDirection comment
 func (r *Recipe) AppendDirection(direction string) {
 	r.Directions = append(r.Directions, direction)
+}
+
+// SetTitle comment
+func (r *Recipe) SetURL(url string) {
+	if r.URL != "" {
+		return
+	}
+	r.URL = url
 }
 
 // SetTitle comment
