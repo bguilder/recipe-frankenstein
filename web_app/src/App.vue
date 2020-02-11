@@ -2,7 +2,7 @@
 	<v-app>
 		<v-app-bar
 			app
-			color="primary"
+			color="#00C279"
 			dark
 		>
 			<v-row
@@ -11,7 +11,7 @@
 			>
 				<v-col cols="12">
 					<v-btn
-						large
+						x-large
 						color="white"
 						text
 						@click="reset"
@@ -61,15 +61,17 @@
 								xs="2"
 							>
 								<v-row>
-									<v-col cols="9">
+									<v-col cols="12">
 										<v-text-field
 											label="Search Recipes..."
 											outlined
+											solo
+											color="#00C279"
 											rounded
 											v-model="search.searchInput"
 										></v-text-field>
 									</v-col>
-									<v-col cols="3">
+									<!-- <v-col cols="3">
 										<v-text-field
 											label="Count"
 											outlined
@@ -77,17 +79,18 @@
 											type="number"
 											v-model="search.recipeCount"
 										></v-text-field>
-									</v-col>
+									</v-col> -->
 								</v-row>
 								<v-row
 									align="center"
 									justify="center"
 								>
 									<v-btn
-										color="primary"
-										text
+										outlined
+										color="#00C279"
+										elevation-20
+										large
 										@click="submit"
-										class="pa-2"
 									>Submit</v-btn>
 								</v-row>
 
@@ -120,7 +123,7 @@ export default Vue.extend({
 			searching: false,
 			search: {
 				searchInput: null,
-				recipeCount: 1
+				recipeCount: 5
 			}
 		};
 	},

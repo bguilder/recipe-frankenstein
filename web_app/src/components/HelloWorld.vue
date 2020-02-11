@@ -63,7 +63,7 @@
 				size="100"
 				width="10"
 				indeterminate
-				color="green"
+				color="#00C279"
 			></v-progress-circular>
 		</v-row>
 	</v-container>

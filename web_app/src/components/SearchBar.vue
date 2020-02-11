@@ -9,6 +9,7 @@
 					single-line
 					outlined
 					rounded
+					color="#00C279"
 				></v-text-field>
 				<!-- <v-btn icon>
 					<v-icon>search</v-icon>
