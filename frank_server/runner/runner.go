@@ -1,48 +1,43 @@
 package runner
 
 import (
-	"frank_server/models"
+	"fmt"
 	"frank_server/scraper"
-	"frank_server/scraper/allrecipes"
-	"frank_server/utils"
 )
 
 // Runner is the main runner
 type Runner struct {
 	recipeName      string
 	numberOfRecipes int
-	searchScraper   scraper.SearchScraper
-	recipeScraper   scraper.RecipeScraper
+	linkScraper     scraper.ILinkScraper
+	recipeScraper   scraper.IRecipeScraper
 }
 
 // NewRunner returns a new Runner
 func NewRunner(recipeName string, numberOfRecipes int,
-	searchScraper scraper.SearchScraper, recipeScraper scraper.RecipeScraper) Runner {
+	linkScraper scraper.ILinkScraper, recipeScraper scraper.IRecipeScraper) Runner {
 	return Runner{
 		recipeName:      recipeName,
 		numberOfRecipes: numberOfRecipes,
-		searchScraper:   searchScraper,
+		linkScraper:     linkScraper,
 		recipeScraper:   recipeScraper,
 	}
 }
 
 // Run searches for receipes
-func (r *Runner) Run() []*models.Recipe {
-	searchRunner := SearchRunner{recipeName: utils.UrlFormat(r.recipeName), scraper: allrecipes.SearchScraper{}}
+func (r *Runner) Run() []*scraper.Recipe {
 
-	// get links
-	recipeURLs := searchRunner.Run()
-
+	recipeURLs := r.linkScraper.Run(r.recipeName, r.numberOfRecipes)
+	fmt.Printf("recipeURLs: %+v", recipeURLs)
 	// get each recipe
 	return r.fetchRecipes(recipeURLs)
 }
 
-func (r *Runner) fetchRecipes(recipeURLs []string) []*models.Recipe {
-	recipes := []*models.Recipe{}
+func (r *Runner) fetchRecipes(recipeURLs []string) []*scraper.Recipe {
+	recipes := []*scraper.Recipe{}
 
-	for i := 0; i < r.numberOfRecipes; i++ {
-		recipeRunner := NewRecipeRunner(recipeURLs[i], allrecipes.RecipeScraper{})
-		result := recipeRunner.Run()
+	for i := 0; i < len(recipeURLs); i++ {
+		result := r.recipeScraper.Run(recipeURLs[i])
 		recipes = append(recipes, result)
 	}
 	return recipes

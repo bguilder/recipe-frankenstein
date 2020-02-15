@@ -6,7 +6,8 @@ import (
 	"frank_server/models"
 	"frank_server/postprocessor"
 	"frank_server/runner"
-	"frank_server/scraper/allrecipes"
+	"frank_server/scraper"
+	"frank_server/source/allrecipes"
 	"frank_server/utils"
 	"log"
 	"net/http"
@@ -73,7 +74,11 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("recipeName!!!!! %s", recipeName)
 	fmt.Printf("recipeCount!!!!! %v", recipeCount)
 
-	runner := runner.NewRunner(recipeName, recipeCount, &allrecipes.SearchScraper{}, &allrecipes.RecipeScraper{})
+	runner := runner.NewRunner(
+		recipeName,
+		recipeCount,
+		scraper.NewLinkScraper(&allrecipes.LinkSource{}),
+		scraper.NewRecipeScraper(&allrecipes.RecipeSource{}))
 	recipes := runner.Run()
 	ing := formatIngredients(recipes)
 	log.Printf("ran pp: %+v", ing)
@@ -87,7 +92,7 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func formatIngredients(recipes []*models.Recipe) postprocessor.PairList {
+func formatIngredients(recipes []*scraper.Recipe) postprocessor.PairList {
 	pp := postprocessor.NewPostProcessor(postprocessor.NewSanitizer())
 
 	ingredients := []string{}

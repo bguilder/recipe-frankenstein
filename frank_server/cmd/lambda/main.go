@@ -6,7 +6,8 @@ import (
 	"frank_server/models"
 	"frank_server/postprocessor"
 	"frank_server/runner"
-	"frank_server/scraper/allrecipes"
+	"frank_server/scraper"
+	"frank_server/source/allrecipes"
 	"log"
 	"strconv"
 
@@ -35,7 +36,11 @@ func handleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 		recipeCount = defaultRecipeCount
 	}
 
-	runner := runner.NewRunner(recipeName, recipeCount, &allrecipes.SearchScraper{}, &allrecipes.RecipeScraper{})
+	runner := runner.NewRunner(
+		recipeName,
+		recipeCount,
+		scraper.NewLinkScraper(&allrecipes.LinkSource{}),
+		scraper.NewRecipeScraper(&allrecipes.RecipeSource{}))
 	recipes := runner.Run()
 
 	return events.APIGatewayProxyResponse{Body: formatIngredients(recipes), StatusCode: 200, Headers: defaultHeaders()}, nil
@@ -47,7 +52,7 @@ func defaultHeaders() map[string]string {
 	return headers
 }
 
-func formatIngredients(recipes []*models.Recipe) string {
+func formatIngredients(recipes []*scraper.Recipe) string {
 	pp := postprocessor.NewPostProcessor(postprocessor.NewSanitizer())
 
 	ingredients := []string{}
