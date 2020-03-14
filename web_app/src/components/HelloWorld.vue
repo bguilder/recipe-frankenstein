@@ -89,9 +89,14 @@ export default Vue.extend({
 	mounted() {
 		axios
 			.get(
-				"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
+				// "https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
+				// 	this.search.searchInput +
+				// 	"&count=" +
+				// 	this.search.recipeCount
+				// TODO: Make this env var
+				"http://localhost:8088" +
 					this.search.searchInput +
-					"&count=" +
+					"/" +
 					this.search.recipeCount
 			)
 			.then(response => {

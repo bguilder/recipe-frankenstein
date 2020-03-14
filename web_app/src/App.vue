@@ -1,5 +1,6 @@
 <template>
 	<v-app>
+		<!-- Start Main Header Bar -->
 		<v-app-bar
 			app
 			color="#00C279"
@@ -21,11 +22,14 @@
 			</v-row>
 		</v-app-bar>
 
+		<!-- Start Result Page -->
 		<template v-if="searching">
 			<v-content>
 				<HelloWorld v-bind:search="search" />
 			</v-content>
 		</template>
+
+		<!-- Start Search Bar -->
 		<template v-else>
 			<v-container
 				fluid
@@ -85,15 +89,77 @@
 									align="center"
 									justify="center"
 								>
+									<v-spacer />
 									<v-btn
 										outlined
 										color="#00C279"
 										elevation-20
 										large
 										@click="submit"
-									>Submit</v-btn>
-								</v-row>
+									>Search Recipes</v-btn>
+									<v-spacer />
+									<v-spacer />
+									<v-dialog
+										v-model="showFeelingHungry"
+										max-width="400"
+									>
+										<template v-slot:activator="{ on }">
+											<v-btn
+												outlined
+												color="#00C279"
+												elevation-20
+												large
+												v-on="on"
+												@click="randomRecipes()"
+											>Feelin' Hungry</v-btn>
+										</template>
+										<v-card>
+											<v-card-title class="headline">Feelin' Hungry</v-card-title>
 
+											<v-card-text>Choose an option below to get started!
+												<v-btn
+													color="#00C279"
+													class="ml-5"
+													@click="randomRecipes()"
+												>
+													<v-icon
+														large
+														dark
+														color="white"
+													>mdi-refresh</v-icon>
+												</v-btn>
+											</v-card-text>
+
+											<v-card-text class="pb-0">
+												<v-radio-group
+													class="ma-2"
+													v-for="(item, index) in feelingHungryRecipes2"
+													:key="index"
+												>
+													<v-radio
+														v-bind:label="item"
+														v-bind:value="item"
+													></v-radio>
+												</v-radio-group>
+											</v-card-text>
+											<v-card-actions class="pt-0">
+												<v-spacer></v-spacer>
+												<v-btn
+													color="red darken-1"
+													text
+													@click="showFeelingHungry = false"
+												>Cancel</v-btn>
+												<v-btn
+													color="green darken-1"
+													text
+													@click="showFeelingHungry = false"
+												>Search!</v-btn>
+											</v-card-actions>
+										</v-card>
+									</v-dialog>
+									<v-spacer />
+
+								</v-row>
 							</v-col>
 						</v-row>
 					</v-col>
@@ -120,20 +186,42 @@ export default Vue.extend({
 
 	data() {
 		return {
+			showFeelingHungry: false,
 			searching: false,
 			search: {
 				searchInput: null,
 				recipeCount: 5
-			}
+			},
+			feelingHungryRecipes2: ["test"],
+			feelingHungryRecipes: [
+				"Chicken Parmesan",
+				"Fish Tacos",
+				"Chicken and Dumplings",
+				"Coq Au Vin",
+				"Jambalaya",
+				"random 1",
+				"random 2",
+				"random 3",
+				"random 4",
+				"random 5"
+			]
 		};
 	},
 	methods: {
 		submit() {
 			this.searching = true;
 		},
+		feelingHungry() {
+			this.showFeelingHungry = true;
+		},
 		reset() {
 			this.searching = false;
 			this.search.searchInput = null;
+		},
+		randomRecipes() {
+			this.feelingHungryRecipes2 = this.feelingHungryRecipes
+				.sort(() => 0.5 - Math.random())
+				.slice(0, 5);
 		}
 	}
 });

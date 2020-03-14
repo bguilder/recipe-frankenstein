@@ -37,11 +37,11 @@ func newRouter() *mux.Router {
 	router.Use(handlers.CORS(
 		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
-		handlers.AllowedOrigins([]string{"http://localhost:8081"})),
+		handlers.AllowedOrigins([]string{"http://localhost:8080"})),
 	)
-
+	// TODO: Make these query params to match lambda
 	router.Handle("/example", http.HandlerFunc(handleExampleIngredients))
-	router.Handle("/search/{recipe}/{count}", http.HandlerFunc(handleSearch)) //.Queries("count")
+	router.Handle("/{recipe}/{count}", http.HandlerFunc(handleSearch))
 	return router
 }
 
@@ -62,12 +62,6 @@ func serve(router *mux.Router) {
 }
 
 func handleSearch(w http.ResponseWriter, r *http.Request) {
-	// if cachedRecipes != nil {
-	// 	log.Printf("Reading from cache: %s", string(cachedRecipes))
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	w.Write(cachedRecipes)
-	// 	return
-	// }
 	vars := mux.Vars(r)
 	recipeName := vars["recipe"]
 	recipeCount, _ := strconv.Atoi(vars["count"])

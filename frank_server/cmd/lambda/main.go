@@ -31,7 +31,7 @@ func main() {
 func handleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	recipeName := req.QueryStringParameters[recipeParam]
 	recipeCount, _ := strconv.Atoi(req.QueryStringParameters[countParam])
-	// Set default max search recipes to 7
+	// Set default max search recipes
 	if recipeCount > defaultRecipeCount || recipeCount <= 0 {
 		recipeCount = defaultRecipeCount
 	}
