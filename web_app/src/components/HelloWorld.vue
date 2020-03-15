@@ -100,18 +100,17 @@ export default Vue.extend({
 	},
 
 	mounted() {
-		console.log(this.search.input);
 		axios
 			.get(
-				// "https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
-				// 	this.search.searchInput +
-				// 	"&count=" +
-				// 	this.search.recipeCount
-				// TODO: Make this env var
-				"http://localhost:8088/" +
+				"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
 					this.search.input +
-					"/" +
+					"&count=" +
 					this.search.recipeCount
+				// TODO: Make this env var
+				// "http://localhost:8088/" +
+				// 	this.search.input +
+				// 	"/" +
+				// 	this.search.recipeCount
 			)
 			.then(response => {
 				this.recipes = response.data.Recipes;
