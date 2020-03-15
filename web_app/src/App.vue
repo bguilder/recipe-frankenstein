@@ -72,7 +72,7 @@
 											solo
 											color="#00C279"
 											rounded
-											v-model="search.searchInput"
+											v-model="search.input"
 										></v-text-field>
 									</v-col>
 									<!-- <v-col cols="3">
@@ -116,22 +116,10 @@
 										<v-card>
 											<v-card-title class="headline">Feelin' Hungry</v-card-title>
 
-											<v-card-text>Choose an option below to get started!
-												<v-btn
-													color="#00C279"
-													class="ml-5"
-													@click="randomRecipes()"
-												>
-													<v-icon
-														large
-														dark
-														color="white"
-													>mdi-refresh</v-icon>
-												</v-btn>
-											</v-card-text>
-
+											<v-card-text>Choose an option below to get started! </v-card-text>
 											<v-card-text class="pb-0">
 												<v-radio-group
+													v-model="search.input"
 													class="ma-2"
 													v-for="(item, index) in feelingHungryRecipes2"
 													:key="index"
@@ -143,6 +131,18 @@
 												</v-radio-group>
 											</v-card-text>
 											<v-card-actions class="pt-0">
+												<v-btn
+													text
+													color="blue"
+													class="ml-5"
+													@click="randomRecipes()"
+												> Shuffle
+													<v-icon
+														large
+														dark
+														color="blue"
+													>mdi-refresh</v-icon>
+												</v-btn>
 												<v-spacer></v-spacer>
 												<v-btn
 													color="red darken-1"
@@ -152,7 +152,7 @@
 												<v-btn
 													color="green darken-1"
 													text
-													@click="showFeelingHungry = false"
+													@click="submit()"
 												>Search!</v-btn>
 											</v-card-actions>
 										</v-card>
@@ -176,6 +176,7 @@
 import Vue from "vue";
 import HelloWorld from "./components/HelloWorld.vue";
 import SearchBar from "./components/SearchBar.vue";
+import axios from "axios";
 
 export default Vue.extend({
 	name: "App",
@@ -189,23 +190,17 @@ export default Vue.extend({
 			showFeelingHungry: false,
 			searching: false,
 			search: {
-				searchInput: null,
+				input: null,
 				recipeCount: 5
 			},
 			feelingHungryRecipes2: ["test"],
-			feelingHungryRecipes: [
-				"Chicken Parmesan",
-				"Fish Tacos",
-				"Chicken and Dumplings",
-				"Coq Au Vin",
-				"Jambalaya",
-				"random 1",
-				"random 2",
-				"random 3",
-				"random 4",
-				"random 5"
-			]
+			feelingHungryRecipes: []
 		};
+	},
+	mounted() {
+		axios.get("http://localhost:8088/feelingHungry").then(response => {
+			this.feelingHungryRecipes = response.data;
+		});
 	},
 	methods: {
 		submit() {
@@ -216,7 +211,8 @@ export default Vue.extend({
 		},
 		reset() {
 			this.searching = false;
-			this.search.searchInput = null;
+			this.search.input = null;
+			this.showFeelingHungry = false;
 		},
 		randomRecipes() {
 			this.feelingHungryRecipes2 = this.feelingHungryRecipes

@@ -12,21 +12,34 @@
 						v-for="(item, index) in recipes"
 						:key="index"
 					>
-						<v-expansion-panel-header>{{item.Title}}</v-expansion-panel-header>
-						<v-expansion-panel-content><a v-bind:href="item.URL">{{item.URL}}</a></v-expansion-panel-content>
-						<v-expansion-panel-content>
-							<v-card-title>Ingredients</v-card-title>
+						<v-expansion-panel-header class="font-weight-bold">{{item.Title}}</v-expansion-panel-header>
+						<v-expansion-panel-content class="pa-0 ma-0">
+							<v-card-title
+								class="justify-center"
+								style="font-size:1em"
+							>Ingredients</v-card-title>
 							<v-card-subtitle
+								class="pa-0 ma-0"
 								v-for="(ing, i) in item.Ingredients"
 								:key="i"
-							> {{ ing }}
+							> * {{ ing }}
 							</v-card-subtitle>
-							<v-card-title>Directions</v-card-title>
+							<v-card-title
+								style="font-size:1em"
+								class="justify-center"
+							>
+								Directions</v-card-title>
 							<v-card-subtitle
+								class="pa-1 ma-0"
 								v-for="(dir, ind) in item.Directions"
 								:key="ind + 100"
 							> {{ind + 1}}. {{ dir }}
 							</v-card-subtitle>
+							<a
+								class="pt-2"
+								style="font-size:.80em"
+								v-bind:href="item.URL"
+							>{{item.URL}}</a>
 						</v-expansion-panel-content>
 					</v-expansion-panel>
 					<br>
@@ -87,6 +100,7 @@ export default Vue.extend({
 	},
 
 	mounted() {
+		console.log(this.search.input);
 		axios
 			.get(
 				// "https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
@@ -94,8 +108,8 @@ export default Vue.extend({
 				// 	"&count=" +
 				// 	this.search.recipeCount
 				// TODO: Make this env var
-				"http://localhost:8088" +
-					this.search.searchInput +
+				"http://localhost:8088/" +
+					this.search.input +
 					"/" +
 					this.search.recipeCount
 			)

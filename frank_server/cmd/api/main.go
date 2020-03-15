@@ -42,6 +42,7 @@ func newRouter() *mux.Router {
 	// TODO: Make these query params to match lambda
 	router.Handle("/example", http.HandlerFunc(handleExampleIngredients))
 	router.Handle("/{recipe}/{count}", http.HandlerFunc(handleSearch))
+	router.Handle("/feelingHungry", http.HandlerFunc(handleFeelingHungry))
 	return router
 }
 
@@ -59,6 +60,13 @@ func serve(router *mux.Router) {
 	if err != nil {
 		log.Fatalf("error 1: %v", err)
 	}
+}
+
+func handleFeelingHungry(w http.ResponseWriter, r *http.Request) {
+	recipes := utils.OpenIngredients("../../ingredients_fixtures/feeling_hungry.json")
+	payload, _ := json.Marshal(recipes)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
 }
 
 func handleSearch(w http.ResponseWriter, r *http.Request) {
