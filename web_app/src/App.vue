@@ -198,9 +198,15 @@ export default Vue.extend({
 		};
 	},
 	mounted() {
-		axios.get("http://localhost:8088/feelingHungry").then(response => {
-			this.feelingHungryRecipes = response.data;
-		});
+		axios
+			.get(
+				// TODO: Make an env var
+				"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1/feelingHungry"
+				//"http://localhost:8088/feelingHungry"
+			)
+			.then(response => {
+				this.feelingHungryRecipes = response.data;
+			});
 	},
 	methods: {
 		submit() {
