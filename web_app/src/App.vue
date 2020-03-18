@@ -167,7 +167,7 @@
 			</v-container>
 		</template>
 		<footer class="caption font-weight-thin text-center">Icon made by Freepik from www.flaticon.com
-			<br>v0.1.0-alpha<br>
+			<br>v0.2.0-alpha<br>
 		</footer>
 	</v-app>
 </template>
@@ -187,11 +187,12 @@ export default Vue.extend({
 
 	data() {
 		return {
+			activeColor: "green",
 			showFeelingHungry: false,
 			searching: false,
 			search: {
 				input: null,
-				recipeCount: 5
+				recipeCount: 7
 			},
 			feelingHungryRecipes2: ["test"],
 			feelingHungryRecipes: []
@@ -201,8 +202,8 @@ export default Vue.extend({
 		axios
 			.get(
 				// TODO: Make an env var
-				"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1/feelingHungry"
-				//"http://localhost:8088/feelingHungry"
+				//"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1/feelingHungry"
+				"http://localhost:8088/feelingHungry"
 			)
 			.then(response => {
 				this.feelingHungryRecipes = response.data;

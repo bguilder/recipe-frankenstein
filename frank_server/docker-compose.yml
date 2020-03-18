@@ -1,11 +1,8 @@
 version: "3"
 services:
     db:
-        container_name: postgres
-        image: postgres
+        container_name: dynamo
+        image: amazon/dynamodb-local
         restart: always
         ports:
-            - "5432:5432"
-        environment:
-            POSTGRES_PASSWORD: example
-            POSTGRES_DB: frank
+            - "8000:8000"

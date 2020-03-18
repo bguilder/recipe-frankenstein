@@ -5,56 +5,69 @@
 		text-wrap
 	>
 		<v-row>
-			<v-col cols="6">
-				<h2 class="display-1 font-weight-bold mb-2">Recipes</h2>
+			<v-col cols="8">
+				<h2 class="display-1 font-weight-bold mb-2 text-center">Recipe List</h2>
 				<v-expansion-panels>
 					<v-expansion-panel
 						v-for="(item, index) in recipes"
 						:key="index"
 					>
-						<v-expansion-panel-header class="font-weight-bold">{{item.Title}}</v-expansion-panel-header>
+						<v-expansion-panel-header>
+							<p
+								color="blue"
+								class=" font-weight-bold"
+							>{{item.Title}}</p>
+						</v-expansion-panel-header>
 						<v-expansion-panel-content class="pa-0 ma-0">
-							<v-card-title
-								class="justify-center"
-								style="font-size:1em"
-							>Ingredients</v-card-title>
-							<v-card-subtitle
-								class="pa-0 ma-0"
-								v-for="(ing, i) in item.Ingredients"
-								:key="i"
-							> * {{ ing }}
+							<!-- TODO: Split this in the panel -->
+
+							<v-row no-gutters>
+								<v-col cols="5">
+									<v-card-title>
+										<p class="display-5">Ingredients</p>
+									</v-card-title>
+									<v-card-subtitle
+										class="pa-0 ma-0 ml-4"
+										v-for="(ing, i) in item.Ingredients"
+										:key="i"
+									>
+										<p class="text-sm mb-2">* {{ ing }}</p>
+									</v-card-subtitle>
+								</v-col>
+								<v-col cols="7">
+									<v-card-title>
+										<p class="display-5">Directions</p>
+
+									</v-card-title>
+									<v-card-subtitle
+										class="pa-1 ma-0"
+										v-for="(dir, ind) in item.Directions"
+										:key="ind + 100"
+									> {{ind + 1}}. {{ dir }}
+									</v-card-subtitle>
+								</v-col>
+							</v-row>
+							<v-card-subtitle style="font-size:.80em">Reference:
+								<a
+									class="pt-2"
+									v-bind:href="item.URL"
+								>{{item.URL}}</a>
 							</v-card-subtitle>
-							<v-card-title
-								style="font-size:1em"
-								class="justify-center"
-							>
-								Directions</v-card-title>
-							<v-card-subtitle
-								class="pa-1 ma-0"
-								v-for="(dir, ind) in item.Directions"
-								:key="ind + 100"
-							> {{ind + 1}}. {{ dir }}
-							</v-card-subtitle>
-							<a
-								class="pt-2"
-								style="font-size:.80em"
-								v-bind:href="item.URL"
-							>{{item.URL}}</a>
 						</v-expansion-panel-content>
 					</v-expansion-panel>
 					<br>
 				</v-expansion-panels>
 			</v-col>
-			<v-col cols="6">
-				<div class="sticky">
-					<h1 class="display-1 font-weight-bold mb-2">Ingredients</h1>
-					<v-card class="pa-5">
+			<v-col cols="4">
+				<div>
+					<h2 class="display-1 font-weight-bold mb-2 text-center">Ingredient Frequency</h2>
+					<v-card class="sticky pa-5">
 						<div
 							v-for="(item, indexs) in ingredients"
 							:key="indexs"
 						>
-							{{item.Key}}
-							{{item.Value}}
+							- {{item.Key}}
+							<span v-bind:style="{ color: activeColor, fontSize: `.7em`}">({{item.Value}})</span>
 
 						</div>
 					</v-card>
@@ -94,6 +107,7 @@ export default Vue.extend({
 	},
 	data() {
 		return {
+			activeColor: "green",
 			ingredients: null,
 			recipes: null
 		};
@@ -102,15 +116,15 @@ export default Vue.extend({
 	mounted() {
 		axios
 			.get(
-				"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
-					this.search.input +
-					"&count=" +
-					this.search.recipeCount
-				// TODO: Make this env var
-				// "http://localhost:8088/" +
+				// "https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
 				// 	this.search.input +
-				// 	"/" +
-				// 	this.search.recipeCount
+				// 	"&count=" +
+				//	this.search.recipeCount
+				//TODO: Make this env var
+				"http://localhost:8088/" +
+					this.search.input +
+					"/" +
+					this.search.recipeCount
 			)
 			.then(response => {
 				this.recipes = response.data.Recipes;
@@ -125,7 +139,7 @@ export default Vue.extend({
 	position: -webkit-sticky;
 	position: sticky;
 	top: 4rem;
-	max-height: 80vh;
+	max-height: 72vh;
 	overflow: auto;
 }
 </style>
