@@ -199,17 +199,14 @@ export default Vue.extend({
 		};
 	},
 	mounted() {
-		axios
-			.get(
-				// TODO: Make an env var
-				//"https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1/feelingHungry"
-				"http://localhost:8088/feelingHungry"
-			)
-			.then(response => {
-				this.feelingHungryRecipes = response.data;
-			});
+		axios.get(this.getFeelingHungryUrl()).then(response => {
+			this.feelingHungryRecipes = response.data;
+		});
 	},
 	methods: {
+		getFeelingHungryUrl() {
+			return process.env.VUE_APP_FEELING_HUNGRY_URL;
+		},
 		submit() {
 			this.searching = true;
 		},

@@ -41,7 +41,7 @@ func newRouter() *mux.Router {
 	)
 	// TODO: Make these query params to match lambda
 	router.Handle("/example", http.HandlerFunc(handleExampleIngredients))
-	router.Handle("/{recipe}/{count}", http.HandlerFunc(handleSearch))
+	router.Handle("/search", http.HandlerFunc(handleSearch))
 	router.Handle("/feelingHungry", http.HandlerFunc(handleFeelingHungry))
 	return router
 }
@@ -70,9 +70,9 @@ func handleFeelingHungry(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSearch(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	recipeName := vars["recipe"]
-	recipeCount, _ := strconv.Atoi(vars["count"])
+	q := r.URL.Query()
+	recipeName := q.Get("recipe")
+	recipeCount, _ := strconv.Atoi(q.Get("count"))
 	fmt.Printf("recipeName!!!!! %s", recipeName)
 	fmt.Printf("recipeCount!!!!! %v", recipeCount)
 

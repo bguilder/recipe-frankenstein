@@ -19,8 +19,6 @@
 							>{{item.Title}}</p>
 						</v-expansion-panel-header>
 						<v-expansion-panel-content class="pa-0 ma-0">
-							<!-- TODO: Split this in the panel -->
-
 							<v-row no-gutters>
 								<v-col cols="5">
 									<v-card-title>
@@ -112,24 +110,22 @@ export default Vue.extend({
 			recipes: null
 		};
 	},
-
+	methods: {
+		getFeelingHungryUrl() {
+			return (
+				process.env.VUE_APP_RECIPE_SEARCH_URL +
+				"?recipe=" +
+				this.search.input +
+				"&count=" +
+				this.search.recipeCount
+			);
+		}
+	},
 	mounted() {
-		axios
-			.get(
-				// "https://1v1zwuknkf.execute-api.us-east-1.amazonaws.com/v1?recipe=" +
-				// 	this.search.input +
-				// 	"&count=" +
-				//	this.search.recipeCount
-				//TODO: Make this env var
-				"http://localhost:8088/" +
-					this.search.input +
-					"/" +
-					this.search.recipeCount
-			)
-			.then(response => {
-				this.recipes = response.data.Recipes;
-				this.ingredients = response.data.Ingredients;
-			});
+		axios.get(this.getFeelingHungryUrl()).then(response => {
+			this.recipes = response.data.Recipes;
+			this.ingredients = response.data.Ingredients;
+		});
 	}
 });
 </script>
