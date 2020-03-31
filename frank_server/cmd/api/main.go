@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"frank_server/cache/dynamo"
 	"frank_server/models"
 	"frank_server/postprocessor"
 	"frank_server/runner"
@@ -19,8 +20,6 @@ import (
 )
 
 const numberOfRecipes = 1
-
-var cachedRecipes []byte
 
 func main() {
 
@@ -76,20 +75,42 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("recipeName!!!!! %s", recipeName)
 	fmt.Printf("recipeCount!!!!! %v", recipeCount)
 
+	cacheStore := dynamo.NewDynamoStore()
+	// try to get from cache first
+	recipes, err := cacheStore.GetRecipes(recipeName)
+	if err != nil {
+		log.Panic(err)
+	}
+	if recipes != nil {
+		log.Println("loaded from cache")
+		writePayload(w, recipes)
+		return
+	}
+	log.Println("cache miss...")
+
 	runner := runner.NewRunner(
 		recipeName,
 		recipeCount,
 		scraper.NewLinkScraper(&allrecipes.LinkSource{}),
 		scraper.NewRecipeScraper(&allrecipes.RecipeSource{}))
-	recipes := runner.Run()
+	recipes = runner.Run()
+
+	// update cache
+	err = cacheStore.PutRecipes(recipeName, recipes)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	writePayload(w, recipes)
+}
+
+func writePayload(w http.ResponseWriter, recipes []*scraper.Recipe) {
 	ing := formatIngredients(recipes)
 	log.Printf("ran pp: %+v", ing)
 
 	recipesView := models.RecipesView{Recipes: recipes, Ingredients: ing}
 
 	payload, _ := json.Marshal(recipesView)
-	cachedRecipes = payload
-	log.Printf("setting cache: %s", string(cachedRecipes))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(payload)
 }

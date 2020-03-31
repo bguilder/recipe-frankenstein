@@ -1,9 +1,9 @@
 package cache
 
-import "frank_server/models"
+import "frank_server/scraper"
 
-// Cache saves recently searched recipes for a configured amount of time
-type Cache interface {
-	Save(recipe *models.Recipe) error
-	Get(recipeName string) (*models.Recipe, error)
+// Simple cache for caching the results of the runner
+type Store interface {
+	PutRecipes(searchKey string, recipes []*scraper.Recipe) error
+	GetRecipes(searchKey string) ([]*scraper.Recipe, error)
 }

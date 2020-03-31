@@ -1,9 +1,10 @@
 package redis
 
 import (
+	"encoding/json"
 	"fmt"
 	"frank_server/cache"
-	"frank_server/models"
+	"frank_server/scraper"
 
 	"github.com/go-redis/redis/v7"
 )
@@ -13,7 +14,7 @@ type redisCache struct {
 }
 
 // NewCache returns a new redis cache
-func NewCache() cache.Cache {
+func NewCache() cache.Store {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
@@ -27,15 +28,25 @@ func NewCache() cache.Cache {
 	}
 }
 
-func (r *redisCache) Save(recipe *models.Recipe) error {
-	res := r.client.Set("test", "foo", -1)
+func (r *redisCache) PutRecipes(searchKey string, recipes []*scraper.Recipe) error {
+	recipeBytes, _ := json.Marshal(recipes)
+	res := r.client.Set(searchKey, recipeBytes, -1)
 	return res.Err()
 }
 
-func (r *redisCache) Get(recipeName string) (*models.Recipe, error) {
-	res := r.client.Get(recipeName)
+func (r *redisCache) GetRecipes(searchKey string) ([]*scraper.Recipe, error) {
+	res := r.client.Get(searchKey)
 	if err := res.Err(); err != nil {
 		return nil, err
 	}
-	return &models.Recipe{Title: recipeName}, nil
+	resBytes, err := res.Bytes()
+	if err != nil {
+		return nil, err
+	}
+	recipes := []*scraper.Recipe{}
+	if err := json.Unmarshal(resBytes, &recipes); err != nil {
+		return nil, err
+	}
+
+	return recipes, nil
 }

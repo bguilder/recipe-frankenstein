@@ -21,6 +21,7 @@ func (p *PostProcessor) Run(ingredients []string) PairList {
 
 func (p *PostProcessor) calculateWordFrequency(allIngredients []string) PairList {
 
+	// TODO: Improve this algorithm
 	allWordsDict := map[string]int{}
 	allIngredientsArr := []string{}
 	allIngredientsDict := map[string]int{}
@@ -120,6 +121,7 @@ type Pair struct {
 	Value int
 }
 
+// TODO: Rename this to something relevant
 type PairList []Pair
 
 func (p PairList) Len() int           { return len(p) }
