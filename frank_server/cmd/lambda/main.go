@@ -48,6 +48,9 @@ func handleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 		recipeCount = defaultRecipeCount
 	}
 
+	// TODO: better sanatize search params
+	recipeName = strings.ToLower(recipeName)
+
 	recipes, err := cacheStore.GetRecipes(recipeName)
 	if err != nil {
 		log.Panic(err)
