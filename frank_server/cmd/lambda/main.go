@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"frank_server/cache/dynamo"
 	"frank_server/models"
 	"frank_server/postprocessor"
 	"frank_server/runner"
@@ -23,7 +24,12 @@ const (
 	countParam               = "count"
 	accessControlAllowOrigin = "Access-Control-Allow-Origin"
 	recipeFrankDomain        = "http://recipefrankenstein.com"
+	env                      = "live"
 )
+
+// //It is a best practice to instanciate the dynamoDB client outside of the lambda function handler.
+// https://aws.amazon.com/blogs/database/building-enterprise-applications-using-amazon-dynamodb-aws-lambda-and-golang/
+var cacheStore = dynamo.NewDynamoStore(env)
 
 func main() {
 	lambda.Start(handleRequest)
@@ -42,14 +48,38 @@ func handleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 		recipeCount = defaultRecipeCount
 	}
 
+	recipes, err := cacheStore.GetRecipes(recipeName)
+	if err != nil {
+		log.Panic(err)
+	}
+	if recipes != nil {
+		log.Println("loaded from cache")
+		return buildAPIGatewayProxyResponse(recipes), nil
+	}
+	log.Println("cache miss...")
+
 	runner := runner.NewRunner(
 		recipeName,
 		recipeCount,
 		scraper.NewLinkScraper(&allrecipes.LinkSource{}),
 		scraper.NewRecipeScraper(&allrecipes.RecipeSource{}))
-	recipes := runner.Run()
 
-	return events.APIGatewayProxyResponse{Body: formatIngredients(recipes), StatusCode: 200, Headers: defaultHeaders()}, nil
+	recipes = runner.Run()
+
+	// update cache
+	err = cacheStore.PutRecipes(recipeName, recipes)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return buildAPIGatewayProxyResponse(recipes), nil
+}
+
+func buildAPIGatewayProxyResponse(recipes []*scraper.Recipe) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		Body:       formatIngredients(recipes),
+		StatusCode: 200,
+		Headers:    defaultHeaders()}
 }
 
 func handleFeelingHungry() (events.APIGatewayProxyResponse, error) {
@@ -82,6 +112,7 @@ func formatIngredients(recipes []*scraper.Recipe) string {
 
 }
 
+// TODO: Move to static file
 const feelingHungry = `[
 	"Chicken Parmesan",
 	"Fish Tacos",

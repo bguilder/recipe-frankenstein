@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-const tableName = "recipe-cache"
+const tableName = "live-recipe-cache"
 const tableKey = "SearchKey"
 
 type dynamoStore struct {
@@ -23,12 +23,20 @@ type RecipeDocument struct {
 	Recipes   []*scraper.Recipe
 }
 
-func NewDynamoStore() cache.Store {
-	client := newDynamoClient()
+func NewDynamoStore(env string) cache.Store {
+	client := newDynamoClient(env)
 	return &dynamoStore{client: client}
 }
 
-func newDynamoClient() *dynamodb.DynamoDB {
+// TODO: per best practice we should create this outside of the handle function to re-use connections
+// https://aws.amazon.com/blogs/database/building-enterprise-applications-using-amazon-dynamodb-aws-lambda-and-golang/
+func newDynamoClient(env string) *dynamodb.DynamoDB {
+	if env == "live" {
+		dbSession := session.Must(session.NewSessionWithOptions(session.Options{
+			SharedConfigState: session.SharedConfigEnable,
+		}))
+		return dynamodb.New(dbSession)
+	}
 	// TODO: separate out into config
 	awsCfg := aws.NewConfig().
 		WithRegion("us-east-1").
@@ -38,6 +46,7 @@ func newDynamoClient() *dynamodb.DynamoDB {
 	if err != nil {
 		log.Panic(err)
 	}
+
 	return dynamodb.New(sess, awsCfg)
 }
 

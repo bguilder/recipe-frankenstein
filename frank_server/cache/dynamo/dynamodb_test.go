@@ -10,9 +10,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
+const testEnv = "test"
+
 func TestDynamo(t *testing.T) {
 	initTest()
-	test := NewDynamoStore()
+	test := NewDynamoStore(testEnv)
 	key := "test"
 	title := "title"
 	recipes := []*scraper.Recipe{&scraper.Recipe{Title: title}}
@@ -34,7 +36,7 @@ func TestDynamo(t *testing.T) {
 }
 
 func initTest() {
-	client := newDynamoClient()
+	client := newDynamoClient(testEnv)
 	_, err := client.CreateTable(newSchema())
 	if err != nil {
 		fmt.Printf("error creating table: %s, err: %s", tableName, err.Error())

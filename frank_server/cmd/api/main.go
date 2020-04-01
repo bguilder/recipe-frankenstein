@@ -75,7 +75,8 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("recipeName!!!!! %s", recipeName)
 	fmt.Printf("recipeCount!!!!! %v", recipeCount)
 
-	cacheStore := dynamo.NewDynamoStore()
+	// TODO: move this higher up so we don't instantiate this each time
+	cacheStore := dynamo.NewDynamoStore("test")
 	// try to get from cache first
 	recipes, err := cacheStore.GetRecipes(recipeName)
 	if err != nil {
