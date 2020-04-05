@@ -25,7 +25,11 @@
 		<!-- Start Result Page -->
 		<template v-if="searching">
 			<v-content>
-				<HelloWorld v-bind:search="search" />
+				<Recipes
+					v-bind:search="search"
+					v-bind:showRecipeList="showRecipeList"
+					v-bind:showFrequency="showFrequency"
+				/>
 			</v-content>
 		</template>
 
@@ -174,15 +178,14 @@
 
 <script lang="ts">
 import Vue from "vue";
-import HelloWorld from "./components/HelloWorld.vue";
-import SearchBar from "./components/SearchBar.vue";
+import Recipes from "./components/Recipes.vue";
 import axios from "axios";
 
 export default Vue.extend({
 	name: "App",
 
 	components: {
-		HelloWorld
+		Recipes
 	},
 
 	data() {
@@ -195,7 +198,10 @@ export default Vue.extend({
 				recipeCount: 7
 			},
 			feelingHungryRecipes2: ["test"],
-			feelingHungryRecipes: []
+			feelingHungryRecipes: [],
+			drawer: false,
+			showRecipeList: true,
+			showFrequency: true
 		};
 	},
 	mounted() {
@@ -218,10 +224,29 @@ export default Vue.extend({
 			this.search.input = null;
 			this.showFeelingHungry = false;
 		},
+		toggleRecipeList() {
+			this.showRecipeList = !this.showRecipeList;
+		},
+		toggleFrequency() {
+			this.showFrequency = !this.showFrequency;
+		},
 		randomRecipes() {
 			this.feelingHungryRecipes2 = this.feelingHungryRecipes
 				.sort(() => 0.5 - Math.random())
 				.slice(0, 5);
+		},
+		isMobile() {
+			// TODO: Add responsive small screen here
+			// TODO: Don't copy this function everywhere
+			if (
+				/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+					navigator.userAgent
+				)
+			) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 });

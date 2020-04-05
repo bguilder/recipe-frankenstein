@@ -38,6 +38,7 @@ func newDynamoClient(env string) *dynamodb.DynamoDB {
 		return dynamodb.New(dbSession)
 	}
 	// TODO: separate out into config
+	log.Printf("here?? : %s", tableName)
 	awsCfg := aws.NewConfig().
 		WithRegion("us-east-1").
 		WithEndpoint("http://localhost:8000")

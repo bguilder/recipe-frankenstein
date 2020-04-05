@@ -30,7 +30,7 @@ func NewSanitizer() Sanitizer {
 func (s *Sanitizer) hasStopWord(word string) bool {
 	for i := 0; i < len(s.StopWords); i++ {
 		if _, ok := s.StopWords[word]; ok {
-			fmt.Printf("has stop word... %s", word)
+			fmt.Printf("Stop Word... %s\n", word)
 			return true
 		}
 	}
@@ -46,17 +46,18 @@ func (s *Sanitizer) Sanitize(ingredient string) string {
 			splitIngredient = append(splitIngredient[:i], splitIngredient[i+1:]...)
 			i--
 		}
-	}
-	ingredient = strings.Join(splitIngredient, " ")
-
-	// remove everything that is not a letter
-	runes := []rune(ingredient)
-	for i := 0; i < len(runes); i++ {
-		if !unicode.IsLetter(runes[i]) {
-			runes = append(runes[:i], runes[i+1:]...)
-			i--
+		// remove everything that is not a letter
+		runes := []rune(splitIngredient[i])
+		for x := 0; x < len(runes); x++ {
+			if !unicode.IsLetter(runes[x]) {
+				runes = append(runes[:x], runes[x+1:]...)
+				x--
+			}
 		}
+		splitIngredient[i] = string(runes)
 	}
-	// lower case
-	return strings.ToLower(string(runes))
+	resIngredient := strings.Join(splitIngredient, " ")
+
+	// trim spaces, lower case
+	return strings.Trim(strings.ToLower(resIngredient), " ")
 }

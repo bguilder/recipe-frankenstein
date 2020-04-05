@@ -121,8 +121,8 @@ func writePayload(w http.ResponseWriter, recipes []*scraper.Recipe) {
 	w.Write(payload)
 }
 
-func formatIngredients(recipes []*scraper.Recipe) postprocessor.PairList {
-	pp := postprocessor.NewPostProcessor(postprocessor.NewSanitizer())
+func formatIngredients(recipes []*scraper.Recipe) postprocessor.IngredientFrequencyList {
+	pp := postprocessor.NewPostProcessor()
 
 	ingredients := []string{}
 	for _, recipe := range recipes {
@@ -145,7 +145,7 @@ func handleExampleIngredients(w http.ResponseWriter, r *http.Request) {
 
 func getExampleIngredients() []byte {
 	ingredients := utils.OpenIngredients("../ingredients_fixtures/empanada.json")
-	postProcessor := postprocessor.NewPostProcessor(postprocessor.NewSanitizer())
+	postProcessor := postprocessor.NewPostProcessor()
 	formattedIngredients := postProcessor.Run(ingredients)
 	payload, err := json.Marshal(formattedIngredients)
 	if err != nil {

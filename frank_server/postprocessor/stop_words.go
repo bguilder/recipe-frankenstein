@@ -3,6 +3,8 @@ package postprocessor
 const stopWords = `{
 	"cup": {},
 	"cups": {},
+	"quart": {},
+	"quarts": {},
 	"ounces": {},
 	"ounce": {},
 	"tablespoon": {},

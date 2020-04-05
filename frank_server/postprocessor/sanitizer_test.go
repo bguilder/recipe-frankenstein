@@ -9,6 +9,12 @@ import (
 
 func TestSanitizer_SanatizeIngredient(t *testing.T) {
 	s := postprocessor.NewSanitizer()
-	res := s.Sanitize("an optional 2 cherries")
-	assert.Equal(t, "cherries", res)
+	testCases := map[string]string{
+		"2 large cherries":        "cherries",
+		"2 quarts popped popcorn": "popped popcorn",
+		"7(*^4 😆woop woop":        "woop woop",
+	}
+	for testCase, expected := range testCases {
+		assert.Equal(t, expected, s.Sanitize(testCase))
+	}
 }
