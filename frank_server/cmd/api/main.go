@@ -76,7 +76,7 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("recipeName!!!!! %s", recipeName)
 	fmt.Printf("recipeCount!!!!! %v", recipeCount)
 
-	// TODO: better sanatize search params
+	// TODO: better sanitize search params
 	recipeName = strings.ToLower(recipeName)
 
 	// TODO: move this higher up so we don't instantiate this each time

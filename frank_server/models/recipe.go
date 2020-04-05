@@ -7,5 +7,5 @@ import (
 
 type RecipesView struct {
 	Recipes     []*scraper.Recipe
-	Ingredients postprocessor.PairList
+	Ingredients postprocessor.IngredientFrequencyList
 }

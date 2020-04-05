@@ -1,129 +1,57 @@
 package postprocessor
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
-	"strings"
 )
 
+// IngredientFrequency tracks the count of ingredients
+type IngredientFrequency struct {
+	Name  string
+	Count int
+}
+
+// IngredientFrequencyList implements the sort interface
+type IngredientFrequencyList []IngredientFrequency
+
+func (x IngredientFrequencyList) Len() int           { return len(x) }
+func (x IngredientFrequencyList) Less(i, j int) bool { return x[i].Count < x[j].Count }
+func (x IngredientFrequencyList) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+
+// PostProcessor sanitizes and sorts the ingredients
 type PostProcessor struct {
 	sanitizer Sanitizer
 }
 
-func NewPostProcessor(sanitizer Sanitizer) PostProcessor {
+// NewPostProcessor returns a new PostProcesor
+func NewPostProcessor() PostProcessor {
 	return PostProcessor{sanitizer: NewSanitizer()}
 }
 
-func (p *PostProcessor) Run(ingredients []string) PairList {
+// Run runs the processor on the array of ingredients
+func (p *PostProcessor) Run(ingredients []string) IngredientFrequencyList {
 	return p.calculateWordFrequency(ingredients)
 }
 
-func (p *PostProcessor) calculateWordFrequency(allIngredients []string) PairList {
-
-	// TODO: Improve this algorithm
-	allWordsDict := map[string]int{}
-	allIngredientsArr := []string{}
+func (p *PostProcessor) calculateWordFrequency(allIngredients []string) IngredientFrequencyList {
 	allIngredientsDict := map[string]int{}
-	// split string
-	for i := 0; i < len(allIngredients); i++ {
-		initialSplit := strings.Split(allIngredients[i], " ")
-
-		splitString := []string{}
-
-		for _, word := range initialSplit {
-			ingredient := p.sanitizer.RemovePunctuation(word)
-			ingredient = p.sanitizer.ToLower(ingredient)
-			splitString = append(splitString, ingredient)
-		}
-
-		// remove numbers from the slice
-		for x := 0; x < len(splitString); x++ {
-			if _, err := strconv.Atoi(splitString[x]); err == nil {
-				splitString = append(splitString[:x], splitString[x+1:]...)
-			}
-		}
-
-		// remove certain words from slice
-		for x := 0; x < len(splitString); x++ {
-			if p.sanitizer.hasStopWord(splitString[x]) {
-				splitString = append(splitString[:x], splitString[x+1:]...)
-				x--
-			}
-		}
-
-		combineString := strings.Join(splitString, " ")
-		allIngredientsArr = append(allIngredientsArr, combineString)
-
-		for x := 0; x < len(splitString); x++ {
-			if _, ok := allWordsDict[splitString[x]]; ok {
-				allWordsDict[splitString[x]]++
-			} else {
-				allWordsDict[splitString[x]] = 1
-			}
-		}
-
-		if _, ok := allIngredientsDict[combineString]; ok {
-			allIngredientsDict[combineString]++
+	for _, ingredient := range allIngredients {
+		sanitizedIngredient := p.sanitizer.Sanitize(ingredient)
+		if _, ok := allIngredientsDict[sanitizedIngredient]; ok {
+			allIngredientsDict[sanitizedIngredient]++
 		} else {
-			allIngredientsDict[combineString] = 1
+			allIngredientsDict[sanitizedIngredient] = 1
 		}
-
 	}
-
-	fmt.Printf("\n\n\n=================================allIngredientsArr!=================================\n\n\n")
-
-	for i := 0; i < len(allIngredientsArr); i++ {
-		fmt.Printf("- %v\n", allIngredientsArr[i])
-	}
-
-	fmt.Printf("\n\n\n=================================pairList1!=================================\n\n\n")
-
-	pairList1 := rankByMultipleWordsCount(allIngredientsDict)
-	for i := 0; i < len(pairList1); i++ {
-		fmt.Printf("ingredient: %v - %v\n", pairList1[i].Key, pairList1[i].Value)
-	}
-
-	fmt.Printf("\n\n\n=================================pairList!=================================\n\n\n")
-
-	pairList := rankByWordCount(allWordsDict)
-	for i := 0; i < len(pairList); i++ {
-		fmt.Printf("ingredient: %v - %v\n", pairList[i].Key, pairList[i].Value)
-	}
-
-	return pairList1
+	return rankByWordCount(allIngredientsDict)
 }
 
-func rankByMultipleWordsCount(wordFrequencies map[string]int) PairList {
-	pl := make(PairList, len(wordFrequencies))
+func rankByWordCount(ingredients map[string]int) IngredientFrequencyList {
+	result := make(IngredientFrequencyList, len(ingredients))
 	i := 0
-	for k, v := range wordFrequencies {
-		pl[i] = Pair{k, v}
+	for k, v := range ingredients {
+		result[i] = IngredientFrequency{k, v}
 		i++
 	}
-	sort.Sort(sort.Reverse(pl))
-	return pl
+	sort.Sort(sort.Reverse(result))
+	return result
 }
-
-func rankByWordCount(wordFrequencies map[string]int) PairList {
-	pl := make(PairList, len(wordFrequencies))
-	i := 0
-	for k, v := range wordFrequencies {
-		pl[i] = Pair{k, v}
-		i++
-	}
-	sort.Sort(sort.Reverse(pl))
-	return pl
-}
-
-type Pair struct {
-	Key   string
-	Value int
-}
-
-// TODO: Rename this to something relevant
-type PairList []Pair
-
-func (p PairList) Len() int           { return len(p) }
-func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
-func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }

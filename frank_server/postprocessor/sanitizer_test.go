@@ -3,12 +3,12 @@ package postprocessor_test
 import (
 	"frank_server/postprocessor"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSanitizer(t *testing.T) {
-	sanitzier := &postprocessor.Sanitizer{}
-	res := sanitzier.RemovePunctuation("test")
-	if res != "test" {
-		t.Fail()
-	}
+func TestSanitizer_SanatizeIngredient(t *testing.T) {
+	s := postprocessor.NewSanitizer()
+	res := s.Sanitize("an optional 2 cherries")
+	assert.Equal(t, "cherries", res)
 }
