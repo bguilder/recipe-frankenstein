@@ -96,7 +96,7 @@ func defaultHeaders() map[string]string {
 }
 
 func formatIngredients(recipes []*scraper.Recipe) string {
-	pp := postprocessor.NewPostProcessor(postprocessor.NewSanitizer())
+	pp := postprocessor.NewPostProcessor()
 
 	ingredients := []string{}
 	for _, recipe := range recipes {
