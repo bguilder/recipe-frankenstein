@@ -22,11 +22,12 @@
       </v-content>
     </template>
 
-    <!-- Start Search Bar -->
+    <!-- Center Page -->
     <template v-else>
       <v-container fluid fill-height>
         <v-row no-gutters>
           <v-col>
+            <!-- Picture -->
             <v-row align="center" justify="center">
               <v-col cols="12" class="pa-2">
                 <v-img
@@ -36,6 +37,7 @@
                 ></v-img>
               </v-col>
             </v-row>
+            <!-- Search Bar -->
             <v-row align="center" justify="center">
               <v-col
                 class="pa-2 text-xs-center"
@@ -45,89 +47,97 @@
                 sm="5"
                 xs="2"
               >
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field
-                      label="Search Recipes..."
-                      outlined
-                      solo
-                      color="#00C279"
-                      rounded
-                      v-model="search.input"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-row align="center" justify="center">
-                  <v-spacer />
-                  <v-btn
-                    outlined
-                    color="#00C279"
-                    elevation-20
-                    large
-                    @click="submit"
-                    >Search Recipes</v-btn
-                  >
-                  <v-spacer />
-                  <v-spacer />
-                  <v-dialog v-model="showFeelingHungry" max-width="400">
-                    <template v-slot:activator="{ on }">
-                      <v-btn
-                        outlined
-                        color="#00C279"
-                        elevation-20
-                        large
-                        v-on="on"
-                        @click="randomRecipes()"
-                        >Feelin' Hungry</v-btn
-                      >
-                    </template>
-                    <v-card>
-                      <v-card-title class="headline"
-                        >Feelin' Hungry</v-card-title
-                      >
-
-                      <v-card-text
-                        >Choose an option below to get started!
-                      </v-card-text>
-                      <v-card-text class="pb-0">
-                        <v-radio-group
-                          v-model="search.input"
-                          class="ma-2"
-                          v-for="(item, index) in feelingHungryRecipes2"
-                          :key="index"
-                        >
-                          <v-radio
-                            v-bind:label="item"
-                            v-bind:value="item"
-                          ></v-radio>
-                        </v-radio-group>
-                      </v-card-text>
-                      <v-card-actions class="pt-0">
-                        <v-btn
-                          text
-                          color="blue"
-                          class="ml-5"
-                          @click="randomRecipes()"
-                        >
-                          Shuffle
-                          <v-icon large dark color="blue">mdi-refresh</v-icon>
-                        </v-btn>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          color="red darken-1"
-                          text
-                          @click="showFeelingHungry = false"
-                          >Cancel</v-btn
-                        >
-                        <v-btn color="green darken-1" text @click="submit()"
-                          >Search!</v-btn
-                        >
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                  <v-spacer />
-                </v-row>
+                <v-text-field
+                  label="Search Recipes..."
+                  outlined
+                  solo
+                  color="#00C279"
+                  rounded
+                  v-model="search.input"
+                ></v-text-field>
               </v-col>
+            </v-row>
+            <!-- Buttons -->
+            <v-row align="center" justify="center">
+              <div class="pr-3">
+                <v-btn
+                  v-if="isMobile()"
+                  outlined
+                  color="#00C279"
+                  elevation-20
+                  small
+                  @click="submit"
+                  >Search Recipes</v-btn
+                >
+                <v-btn
+                  v-else
+                  outlined
+                  color="#00C279"
+                  elevation-20
+                  large
+                  @click="submit"
+                  >Search Recipes</v-btn
+                >
+              </div>
+              <div class="pl-3">
+                <v-dialog v-model="showFeelingHungry" max-width="400">
+                  <template v-slot:activator="{ on }">
+                    <v-btn
+                      v-if="isMobile()"
+                      outlined
+                      color="#00C279"
+                      elevation-20
+                      small
+                      v-on="on"
+                      @click="randomRecipes()"
+                      >Feelin' Hungry</v-btn
+                    >
+                    <v-btn
+                      v-else
+                      outlined
+                      color="#00C279"
+                      elevation-20
+                      large
+                      v-on="on"
+                      @click="randomRecipes()"
+                      >Feelin' Hungry</v-btn
+                    >
+                  </template>
+                  <v-card>
+                    <v-card-title class="headline">Feelin' Hungry</v-card-title>
+                    <v-card-text
+                      >Choose an option below to get started!
+                    </v-card-text>
+                    <v-card-text class="pb-0">
+                      <v-radio-group
+                        v-model="search.input"
+                        v-for="(item, index) in feelingHungryRecipes2"
+                        :key="index"
+                      >
+                        <v-radio
+                          v-bind:label="item"
+                          v-bind:value="item"
+                        ></v-radio>
+                      </v-radio-group>
+                    </v-card-text>
+                    <v-card-actions class="pt-0">
+                      <v-btn text color="blue" @click="randomRecipes()">
+                        Shuffle
+                        <v-icon large dark color="blue">mdi-refresh</v-icon>
+                      </v-btn>
+                      <v-btn
+                        color="red darken-1"
+                        text
+                        @click="showFeelingHungry = false"
+                        >Cancel</v-btn
+                      >
+                      <v-btn color="green darken-1" text @click="submit()"
+                        >Search!</v-btn
+                      >
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </div>
             </v-row>
           </v-col>
         </v-row>

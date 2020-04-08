@@ -1,7 +1,7 @@
 <template >
   <v-container v-if="ingredients" fluid text-wrap>
-    <v-row justify="center" v-if="isMobile()">
-      <v-btn class="sticky" @click="toggleView" color="#00C279" text outlined
+    <v-row class="sticky" justify="center" v-if="isMobile()">
+      <v-btn @click="toggleView" color="#00C279" text outlined
         >To {{ switchToShowName() }}</v-btn
       >
     </v-row>
