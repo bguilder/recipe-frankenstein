@@ -1,10 +1,5 @@
 <template >
   <v-container v-if="ingredients" fluid text-wrap>
-    <v-row class="sticky" justify="center" v-if="isMobile()">
-      <v-btn @click="toggleView" color="#00C279" text outlined
-        >To {{ switchToShowName() }}</v-btn
-      >
-    </v-row>
     <v-row>
       <!-- Show Recipes List -->
       <v-col v-if="!isMobile()" cols="8">
@@ -51,14 +46,13 @@ export default Vue.extend({
   },
   props: {
     search: Object,
-    showRecipeList: Boolean
+    showFrequency: Boolean
   },
   data() {
     return {
       ingredients: null,
       recipes: null,
-      toggleColor: "green",
-      showFrequency: false
+      toggleColor: "green"
     };
   },
   methods: {
@@ -81,16 +75,6 @@ export default Vue.extend({
       } else {
         return false;
       }
-    },
-    switchToShowName() {
-      if (this.showFrequency) {
-        return "Recipe List";
-      } else {
-        return "Ingredient Frequency";
-      }
-    },
-    toggleView() {
-      this.showFrequency = !this.showFrequency;
     }
   },
   mounted() {

@@ -2,10 +2,34 @@
   <v-app>
     <!-- Start Main Header Bar -->
     <v-app-bar app color="#00C279" dark>
-      <v-row align="start" justify="start">
-        <v-col cols="12">
-          <v-btn x-large color="white" text @click="reset" class="pa-2">
+      <v-row align="center" justify="start">
+        <v-col cols="7">
+          <v-btn
+            v-if="isMobile() && searching"
+            medium
+            color="#00cc7e"
+            @click="reset"
+            class="pa-2"
+          >
             Recipe Frankenstein</v-btn
+          >
+          <v-btn
+            v-else-if="isMobile() && !searching"
+            medium
+            color="white"
+            text
+            @click="reset"
+            class="pa-2"
+          >
+            Recipe Frankenstein</v-btn
+          >
+          <v-btn v-else x-large color="white" text @click="reset" class="pa-2">
+            Recipe Frankenstein</v-btn
+          >
+        </v-col>
+        <v-col cols="5" class="pl-5" v-if="isMobile() && searching">
+          <v-btn x-small @click="toggleFrequency" color="#00663d"
+            >Go To {{ switchToShowName() }}</v-btn
           >
         </v-col>
       </v-row>
@@ -14,11 +38,7 @@
     <!-- Start Result Page -->
     <template v-if="searching">
       <v-content>
-        <Recipes
-          v-bind:search="search"
-          v-bind:showRecipeList="showRecipeList"
-          v-bind:showFrequency="showFrequency"
-        />
+        <Recipes v-bind:search="search" v-bind:showFrequency="showFrequency" />
       </v-content>
     </template>
 
@@ -173,8 +193,7 @@ export default Vue.extend({
       feelingHungryRecipes2: ["test"],
       feelingHungryRecipes: [],
       drawer: false,
-      showRecipeList: true,
-      showFrequency: true
+      showFrequency: false
     };
   },
   mounted() {
@@ -197,11 +216,15 @@ export default Vue.extend({
       this.search.input = null;
       this.showFeelingHungry = false;
     },
-    toggleRecipeList() {
-      this.showRecipeList = !this.showRecipeList;
-    },
     toggleFrequency() {
       this.showFrequency = !this.showFrequency;
+    },
+    switchToShowName() {
+      if (this.showFrequency) {
+        return "Recipe";
+      } else {
+        return "Frequency";
+      }
     },
     randomRecipes() {
       this.feelingHungryRecipes2 = this.feelingHungryRecipes
