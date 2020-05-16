@@ -2,13 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"frank_server/api"
 	"frank_server/cache/dynamo"
-	"frank_server/models"
-	"frank_server/postprocessor"
-	"frank_server/runner"
-	"frank_server/scraper"
-	"frank_server/source/allrecipes"
 	"log"
 	"strconv"
 	"strings"
@@ -27,7 +22,7 @@ const (
 	env                      = "live"
 )
 
-// //It is a best practice to instanciate the dynamoDB client outside of the lambda function handler.
+// It is a best practice to instantiate the dynamoDB client outside of the lambda function handler.
 // https://aws.amazon.com/blogs/database/building-enterprise-applications-using-amazon-dynamodb-aws-lambda-and-golang/
 var cacheStore = dynamo.NewDynamoStore(env)
 
@@ -35,12 +30,15 @@ func main() {
 	lambda.Start(handleRequest)
 }
 
+// TODO: Move to handler
 func handleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+
 	// route the requests
 	if strings.Contains(req.Path, "feelingHungry") {
 		return handleFeelingHungry()
 	}
 
+	// TODO: Move this into separate function
 	recipeName := req.QueryStringParameters[recipeParam]
 	recipeCount, _ := strconv.Atoi(req.QueryStringParameters[countParam])
 	// Set default max search recipes
@@ -48,39 +46,22 @@ func handleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 		recipeCount = defaultRecipeCount
 	}
 
-	// TODO: better  search params
+	// TODO: better match search params with rest api so we don't have to modify FE code
+	// when local dev vs prod dev
 	recipeName = strings.ToLower(recipeName)
 
-	recipes, err := cacheStore.GetRecipes(recipeName)
+	fetcher := api.NewRecipeFetcherService(cacheStore, recipeName, recipeCount)
+	recipesView := fetcher.Run()
+	recipesViewJSON, err := recipesView.ToJSONString()
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
-	if recipes != nil {
-		log.Println("loaded from cache")
-		return buildAPIGatewayProxyResponse(recipes), nil
-	}
-	log.Println("cache miss...")
-
-	runner := runner.NewRunner(
-		recipeName,
-		recipeCount,
-		scraper.NewLinkScraper(&allrecipes.LinkSource{}),
-		scraper.NewRecipeScraper(&allrecipes.RecipeSource{}))
-
-	recipes = runner.Run()
-
-	// update cache
-	err = cacheStore.PutRecipes(recipeName, recipes)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return buildAPIGatewayProxyResponse(recipes), nil
+	return buildAPIGatewayProxyResponse(recipesViewJSON), nil
 }
 
-func buildAPIGatewayProxyResponse(recipes []*scraper.Recipe) events.APIGatewayProxyResponse {
+func buildAPIGatewayProxyResponse(recipesViewJSON string) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
-		Body:       formatIngredients(recipes),
+		Body:       recipesViewJSON,
 		StatusCode: 200,
 		Headers:    defaultHeaders()}
 }
@@ -93,26 +74,6 @@ func defaultHeaders() map[string]string {
 	headers := make(map[string]string)
 	headers[accessControlAllowOrigin] = recipeFrankDomain
 	return headers
-}
-
-func formatIngredients(recipes []*scraper.Recipe) string {
-	pp := postprocessor.NewPostProcessor()
-
-	ingredients := []string{}
-	for _, recipe := range recipes {
-		for _, ing := range recipe.Ingredients {
-			ingredients = append(ingredients, ing)
-		}
-	}
-
-	result := pp.Run(ingredients)
-	recipesView := models.RecipesView{Recipes: recipes, Ingredients: result}
-	payload, err := json.Marshal(recipesView)
-	if err != nil {
-		log.Printf("error marshalling recipe view %v", err)
-	}
-	return string(payload)
-
 }
 
 // TODO: Move to static file
