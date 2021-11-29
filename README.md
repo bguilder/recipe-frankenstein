@@ -1,7 +1,7 @@
 # Recipe Frankenstein
-Find the missing ingredient for your next dish. 
+Find the missing ingredient for your next dish. 🍜
 
-Given a meal, Recipe Frankenstein searches through multiple recipes to find what ingredients are commonly used and what ingredients you might be missing out on.
+Given a meal, Recipe Frankenstein searches through multiple recipes to find what ingredients are commonly used and what ingredients you might be missing.
 
 ## Prerequisites
 - Docker
