@@ -50,7 +50,7 @@ func newRouter() *mux.Router {
 func serve(router *mux.Router) {
 	srv := &http.Server{
 		Handler: router,
-		Addr:    "127.0.0.1:8088",
+		Addr:    "0.0.0.0:8088",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
