@@ -56,10 +56,10 @@ export default Vue.extend({
     };
   },
   methods: {
-    getFeelingHungryUrl() {
+    getRecipesUrl() {
       return (
-        process.env.VUE_APP_RECIPE_SEARCH_URL +
-        "?recipe=" +
+        process.env.VUE_APP_FRANK_SERVER_URL +
+        "/search?recipe=" +
         this.search.input +
         "&count=" +
         this.search.recipeCount
@@ -78,7 +78,7 @@ export default Vue.extend({
     }
   },
   mounted() {
-    axios.get(this.getFeelingHungryUrl()).then(response => {
+    axios.get(this.getRecipesUrl()).then(response => {
       this.recipes = response.data.Recipes;
       this.ingredients = response.data.Ingredients;
     });

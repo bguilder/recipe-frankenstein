@@ -46,9 +46,6 @@ export default Vue.extend({
     this.randomRecipes();
   },
   methods: {
-    getFeelingHungryUrl() {
-      return process.env.VUE_APP_FEELING_HUNGRY_URL;
-    },
     randomRecipes() {
       this.feelingHungryRecipes2 = this.$props.feelingHungryRecipes
         .sort(() => 0.5 - Math.random())

@@ -1,19 +1,22 @@
 # Recipe Frankenstein
-Find the most common ingredients used in a food dish across many recipes.
+Find the missing ingredient for your next dish. 
+
+Given a meal, Recipe Frankenstein searches through multiple recipes to find what ingredients are commonly used and what ingredients you might be missing out on.
 
 ## Prerequisites
-- Go v1.17.3
 - Docker
+- Go v1.17.3
+- Node v16.13.0
 
 ## Running locally
 ### Both Services
 ```
-make start
+$ make start
 ```
 ### Only Backend
 In `./frank_server` start the containers:
 ```
-docker-compose up -d
+$ docker-compose up -d
 ```
 Debugging in VS code, add the following `.vscode/launch.json` file:
 ```json
@@ -31,6 +34,11 @@ Debugging in VS code, add the following `.vscode/launch.json` file:
 }
 ```
 ### Only Frontend
+Inside of the `web_app` directory:
 ```
-npm run --prefix ./web_app serve
+$ npm install
+$ npm run --prefix ./web_app serve
 ```
+
+### Troubleshooting:
+- The table must exist in local dynamodb. This can be created by running the cache tests - `go test cache/dynamo`.

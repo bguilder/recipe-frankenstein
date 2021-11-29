@@ -37,7 +37,7 @@ func newRouter() *mux.Router {
 	router.Use(handlers.CORS(
 		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
-		handlers.AllowedOrigins([]string{"http://localhost:8080"})),
+		handlers.AllowedOrigins([]string{"http://localhost:8080", "localhost:8080"})),
 	)
 	// TODO: Make these query params to match lambda
 	router.Handle("/example", http.HandlerFunc(handleExampleIngredients))
@@ -56,6 +56,8 @@ func serve(router *mux.Router) {
 		ReadTimeout:  15 * time.Second,
 	}
 
+	log.Printf("test change")
+
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatalf("error 1: %v", err)
@@ -63,7 +65,7 @@ func serve(router *mux.Router) {
 }
 
 func handleFeelingHungry(w http.ResponseWriter, r *http.Request) {
-	recipes := utils.OpenIngredients("../../ingredients_fixtures/feeling_hungry.json")
+	recipes := utils.OpenIngredients("./ingredients_fixtures/feeling_hungry.json")
 	payload, _ := json.Marshal(recipes)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(payload)
@@ -144,7 +146,7 @@ func handleExampleIngredients(w http.ResponseWriter, r *http.Request) {
 }
 
 func getExampleIngredients() []byte {
-	ingredients := utils.OpenIngredients("../ingredients_fixtures/empanada.json")
+	ingredients := utils.OpenIngredients("./ingredients_fixtures/empanada.json")
 	postProcessor := postprocessor.NewPostProcessor()
 	formattedIngredients := postProcessor.Run(ingredients)
 	payload, err := json.Marshal(formattedIngredients)

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -41,9 +42,11 @@ func newDynamoClient(env string) *dynamodb.DynamoDB {
 	log.Printf("here?? : %s", tableName)
 	awsCfg := aws.NewConfig().
 		WithRegion("us-east-1").
-		WithEndpoint("http://localhost:8000")
+		WithEndpoint("http://localhost:8000").
+		WithCredentials(credentials.NewStaticCredentials("test", "test", "test"))
 
 	sess, err := session.NewSession(awsCfg)
+
 	if err != nil {
 		log.Panic(err)
 	}

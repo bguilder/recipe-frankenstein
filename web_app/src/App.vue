@@ -197,14 +197,11 @@ export default Vue.extend({
     };
   },
   mounted() {
-    axios.get(this.getFeelingHungryUrl()).then(response => {
+    axios.get(process.env.VUE_APP_FRANK_SERVER_URL + "/feelingHungry").then(response => {
       this.feelingHungryRecipes = response.data;
     });
   },
   methods: {
-    getFeelingHungryUrl() {
-      return process.env.VUE_APP_FEELING_HUNGRY_URL;
-    },
     submit() {
       this.searching = true;
     },
