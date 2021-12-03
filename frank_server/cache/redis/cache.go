@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"frank_server/cache"
-	"frank_server/scraper"
+	"frank_server/models"
 
 	"github.com/go-redis/redis/v7"
 )
@@ -28,13 +28,13 @@ func NewCache() cache.Store {
 	}
 }
 
-func (r *redisCache) PutRecipes(searchKey string, recipes []*scraper.Recipe) error {
+func (r *redisCache) PutRecipes(searchKey string, recipes []*models.Recipe) error {
 	recipeBytes, _ := json.Marshal(recipes)
 	res := r.client.Set(searchKey, recipeBytes, -1)
 	return res.Err()
 }
 
-func (r *redisCache) GetRecipes(searchKey string) ([]*scraper.Recipe, error) {
+func (r *redisCache) GetRecipes(searchKey string) ([]*models.Recipe, error) {
 	res := r.client.Get(searchKey)
 	if err := res.Err(); err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (r *redisCache) GetRecipes(searchKey string) ([]*scraper.Recipe, error) {
 	if err != nil {
 		return nil, err
 	}
-	recipes := []*scraper.Recipe{}
+	recipes := []*models.Recipe{}
 	if err := json.Unmarshal(resBytes, &recipes); err != nil {
 		return nil, err
 	}

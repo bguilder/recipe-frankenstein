@@ -2,19 +2,17 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"frank_server/cache/dynamo"
 	"frank_server/models"
-	"frank_server/postprocessor"
 	"frank_server/runner"
-	"frank_server/scraper"
-	"frank_server/source/allrecipes"
+	"frank_server/runner/allrecipes"
 	"log"
 	"strconv"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/gocolly/colly"
 )
 
 const (
@@ -42,45 +40,25 @@ func handleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 	}
 
 	recipeName := req.QueryStringParameters[recipeParam]
-	recipeCount, _ := strconv.Atoi(req.QueryStringParameters[countParam])
-	// Set default max search recipes
-	if recipeCount > defaultRecipeCount || recipeCount <= 0 {
-		recipeCount = defaultRecipeCount
-	}
-
-	// TODO: better  search params
-	recipeName = strings.ToLower(recipeName)
-
-	recipes, err := cacheStore.GetRecipes(recipeName)
+	recipeCount, err := strconv.Atoi(req.QueryStringParameters[countParam])
 	if err != nil {
 		log.Panic(err)
 	}
-	if recipes != nil {
-		log.Println("loaded from cache")
-		return buildAPIGatewayProxyResponse(recipes), nil
-	}
-	log.Println("cache miss...")
 
-	runner := runner.NewRunner(
+	runner := runner.NewSearchRunner(
 		recipeName,
 		recipeCount,
-		scraper.NewLinkScraper(&allrecipes.LinkSource{}),
-		scraper.NewRecipeScraper(&allrecipes.RecipeSource{}))
+		cacheStore,
+		allrecipes.NewAllRecipesScraper(colly.NewCollector(), allrecipes.DefaultBuildSearchUrl))
 
-	recipes = runner.Run()
-
-	// update cache
-	err = cacheStore.PutRecipes(recipeName, recipes)
-	if err != nil {
-		log.Panic(err)
-	}
+	recipes := runner.Run()
 
 	return buildAPIGatewayProxyResponse(recipes), nil
 }
 
-func buildAPIGatewayProxyResponse(recipes []*scraper.Recipe) events.APIGatewayProxyResponse {
+func buildAPIGatewayProxyResponse(recipes models.RecipesView) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
-		Body:       formatIngredients(recipes),
+		Body:       string(recipes.Marshal()),
 		StatusCode: 200,
 		Headers:    defaultHeaders()}
 }
@@ -93,26 +71,6 @@ func defaultHeaders() map[string]string {
 	headers := make(map[string]string)
 	headers[accessControlAllowOrigin] = recipeFrankDomain
 	return headers
-}
-
-func formatIngredients(recipes []*scraper.Recipe) string {
-	pp := postprocessor.NewPostProcessor()
-
-	ingredients := []string{}
-	for _, recipe := range recipes {
-		for _, ing := range recipe.Ingredients {
-			ingredients = append(ingredients, ing)
-		}
-	}
-
-	result := pp.Run(ingredients)
-	recipesView := models.RecipesView{Recipes: recipes, Ingredients: result}
-	payload, err := json.Marshal(recipesView)
-	if err != nil {
-		log.Printf("error marshalling recipe view %v", err)
-	}
-	return string(payload)
-
 }
 
 // TODO: Move to static file

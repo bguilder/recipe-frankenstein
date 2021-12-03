@@ -1,11 +1,17 @@
 package models
 
-import (
-	"frank_server/postprocessor"
-	"frank_server/scraper"
-)
+// Recipe model contains all scraped recipe data
+type Recipe struct {
+	Title       string
+	Ingredients []string
+	Directions  []string
+	URL         string
+}
 
-type RecipesView struct {
-	Recipes     []*scraper.Recipe
-	Ingredients postprocessor.IngredientFrequencyList
+func (r *Recipe) AppendIngredient(ingredient string) {
+	r.Ingredients = append(r.Ingredients, ingredient)
+}
+
+func (r *Recipe) AppendDirection(direction string) {
+	r.Directions = append(r.Directions, direction)
 }

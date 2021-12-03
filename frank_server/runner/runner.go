@@ -1,44 +1,79 @@
 package runner
 
 import (
-	"fmt"
-	"frank_server/scraper"
+	"frank_server/cache"
+	"frank_server/models"
+	"frank_server/postprocessor"
+	"log"
+	"strings"
 )
 
-// Runner is the main runner
-type Runner struct {
-	recipeName      string
-	numberOfRecipes int
-	linkScraper     scraper.ILinkScraper
-	recipeScraper   scraper.IRecipeScraper
+const defaultRecipeCount = 7
+
+// SearchRunner is the main runner
+type SearchRunner struct {
+	recipeName  string
+	recipeCount int
+	scraper     Scraper
+	cache       cache.Store
 }
 
-// NewRunner returns a new Runner
-func NewRunner(recipeName string, numberOfRecipes int,
-	linkScraper scraper.ILinkScraper, recipeScraper scraper.IRecipeScraper) Runner {
-	return Runner{
-		recipeName:      recipeName,
-		numberOfRecipes: numberOfRecipes,
-		linkScraper:     linkScraper,
-		recipeScraper:   recipeScraper,
+// NewSearchRunner returns a new SearchRunner
+func NewSearchRunner(recipeName string, recipeCount int,
+	cache cache.Store, scraper Scraper) SearchRunner {
+	return SearchRunner{
+		recipeName:  recipeName,
+		recipeCount: recipeCount,
+		scraper:     scraper,
+		cache:       cache,
 	}
 }
 
 // Run searches for receipes
-func (r *Runner) Run() []*scraper.Recipe {
+func (r *SearchRunner) Run() models.RecipesView {
+	formattedRecipeName := strings.ToLower(r.recipeName)
 
-	recipeURLs := r.linkScraper.Run(r.recipeName, r.numberOfRecipes)
-	fmt.Printf("recipeURLs: %+v", recipeURLs)
-	// get each recipe
-	return r.fetchRecipes(recipeURLs)
+	// Set default max search recipes
+	if r.recipeCount > defaultRecipeCount || r.recipeCount <= 0 {
+		r.recipeCount = defaultRecipeCount
+	}
+
+	recipes, err := r.cache.GetRecipes(formattedRecipeName)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if recipes != nil {
+		log.Println("loaded from cache")
+		return buildRecipesView(recipes)
+	}
+
+	log.Println("cache miss...")
+
+	result := r.scraper.GetRecipes(formattedRecipeName, r.recipeCount)
+
+	// update cache
+	err = r.cache.PutRecipes(formattedRecipeName, result)
+	if err != nil {
+		log.Panic(err)
+	}
+	return buildRecipesView(recipes)
 }
 
-func (r *Runner) fetchRecipes(recipeURLs []string) []*scraper.Recipe {
-	recipes := []*scraper.Recipe{}
+func buildRecipesView(recipes []*models.Recipe) models.RecipesView {
+	ing := formatIngredients(recipes)
+	log.Printf("formatted ingredients: %+v\n", ing)
 
-	for i := 0; i < len(recipeURLs); i++ {
-		result := r.recipeScraper.Run(recipeURLs[i])
-		recipes = append(recipes, result)
+	return models.RecipesView{Recipes: recipes, Ingredients: ing}
+}
+
+func formatIngredients(recipes []*models.Recipe) postprocessor.IngredientFrequencyList {
+	pp := postprocessor.NewPostProcessor()
+
+	ingredients := []string{}
+	for _, recipe := range recipes {
+		ingredients = append(ingredients, recipe.Ingredients...)
 	}
-	return recipes
+
+	return pp.Run(ingredients)
 }

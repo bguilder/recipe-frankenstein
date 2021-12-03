@@ -2,20 +2,17 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"frank_server/cache/dynamo"
-	"frank_server/models"
 	"frank_server/postprocessor"
 	"frank_server/runner"
-	"frank_server/scraper"
-	"frank_server/source/allrecipes"
+	"frank_server/runner/allrecipes"
 	"frank_server/utils"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/gocolly/colly"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -56,8 +53,6 @@ func serve(router *mux.Router) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Printf("test change")
-
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatalf("error 1: %v", err)
@@ -74,68 +69,23 @@ func handleFeelingHungry(w http.ResponseWriter, r *http.Request) {
 func handleSearch(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	recipeName := q.Get("recipe")
-	recipeCount, _ := strconv.Atoi(q.Get("count"))
-	fmt.Printf("recipeName!!!!! %s", recipeName)
-	fmt.Printf("recipeCount!!!!! %v", recipeCount)
+	count := q.Get("count")
 
-	// TODO: better sanitize search params
-	recipeName = strings.ToLower(recipeName)
-
-	// TODO: move this higher up so we don't instantiate this each time
-	cacheStore := dynamo.NewDynamoStore("test")
-
-	// try to get from cache first
-	recipes, err := cacheStore.GetRecipes(recipeName)
+	recipeCount, err := strconv.Atoi(count)
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("err getting count: %s", err.Error())
 	}
-	if recipes != nil {
-		log.Println("loaded from cache")
-		writePayload(w, recipes)
-		return
-	}
-	log.Println("cache miss...")
 
-	runner := runner.NewRunner(
+	runner := runner.NewSearchRunner(
 		recipeName,
 		recipeCount,
-		scraper.NewLinkScraper(&allrecipes.LinkSource{}),
-		scraper.NewRecipeScraper(&allrecipes.RecipeSource{}))
-	recipes = runner.Run()
+		dynamo.NewDynamoStore("test"),
+		allrecipes.NewAllRecipesScraper(colly.NewCollector(), allrecipes.DefaultBuildSearchUrl))
 
-	// update cache
-	err = cacheStore.PutRecipes(recipeName, recipes)
-	if err != nil {
-		log.Panic(err)
-	}
+	recipesView := runner.Run()
 
-	writePayload(w, recipes)
-}
-
-func writePayload(w http.ResponseWriter, recipes []*scraper.Recipe) {
-	ing := formatIngredients(recipes)
-	log.Printf("ran pp: %+v", ing)
-
-	recipesView := models.RecipesView{Recipes: recipes, Ingredients: ing}
-
-	payload, _ := json.Marshal(recipesView)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(payload)
-}
-
-func formatIngredients(recipes []*scraper.Recipe) postprocessor.IngredientFrequencyList {
-	pp := postprocessor.NewPostProcessor()
-
-	ingredients := []string{}
-	for _, recipe := range recipes {
-		for _, ing := range recipe.Ingredients {
-			ingredients = append(ingredients, ing)
-		}
-	}
-	log.Printf("running pp")
-
-	return pp.Run(ingredients)
-
+	w.Write(recipesView.Marshal())
 }
 
 // handle func

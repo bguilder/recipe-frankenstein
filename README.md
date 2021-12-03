@@ -1,5 +1,5 @@
-# Recipe Frankenstein
-Find the missing ingredient for your next dish. 🍜
+# Recipe Frankenstein 🍜
+Find the missing ingredient for your next dish.
 
 Given a meal, Recipe Frankenstein searches through multiple recipes to find what ingredients are commonly used and what ingredients you might be missing.
 
