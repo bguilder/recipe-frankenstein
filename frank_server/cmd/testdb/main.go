@@ -29,7 +29,6 @@ func main() {
 	if err != nil {
 		fmt.Println("error creating table", err.Error())
 	}
-	fmt.Printf("HERE2?")
 
 	dbKey := "testkey"
 
@@ -81,13 +80,10 @@ func newDynamoClient() (*dynamodb.DynamoDB, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("HERE?")
 	return dynamodb.New(sess, awsCfg), nil
 }
 
 func newSchema() *dynamodb.CreateTableInput {
-	fmt.Printf("HERE3?")
-
 	return &dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{{
 			AttributeName: aws.String("TestKey"),

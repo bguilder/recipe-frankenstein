@@ -2,7 +2,7 @@ package dynamo
 
 import (
 	"frank_server/cache"
-	"frank_server/scraper"
+	"frank_server/models"
 	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -21,7 +21,7 @@ type dynamoStore struct {
 
 type RecipeDocument struct {
 	SearchKey string
-	Recipes   []*scraper.Recipe
+	Recipes   []*models.Recipe
 }
 
 func NewDynamoStore(env string) cache.Store {
@@ -39,7 +39,6 @@ func newDynamoClient(env string) *dynamodb.DynamoDB {
 		return dynamodb.New(dbSession)
 	}
 	// TODO: separate out into config
-	log.Printf("here?? : %s", tableName)
 	awsCfg := aws.NewConfig().
 		WithRegion("us-east-1").
 		WithEndpoint("http://localhost:8000").
@@ -54,7 +53,7 @@ func newDynamoClient(env string) *dynamodb.DynamoDB {
 	return dynamodb.New(sess, awsCfg)
 }
 
-func (d *dynamoStore) PutRecipes(searchKey string, recipes []*scraper.Recipe) error {
+func (d *dynamoStore) PutRecipes(searchKey string, recipes []*models.Recipe) error {
 	doc := &RecipeDocument{SearchKey: searchKey, Recipes: recipes}
 	dbItem, err := dynamodbattribute.MarshalMap(doc)
 	if err != nil {
@@ -73,7 +72,7 @@ func (d *dynamoStore) PutRecipes(searchKey string, recipes []*scraper.Recipe) er
 	return nil
 }
 
-func (d *dynamoStore) GetRecipes(searchKey string) ([]*scraper.Recipe, error) {
+func (d *dynamoStore) GetRecipes(searchKey string) ([]*models.Recipe, error) {
 	getInput := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			tableKey: {

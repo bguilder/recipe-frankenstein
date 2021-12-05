@@ -2,7 +2,7 @@ package dynamo
 
 import (
 	"fmt"
-	"frank_server/scraper"
+	"frank_server/models"
 	"log"
 	"testing"
 
@@ -17,7 +17,7 @@ func TestDynamo(t *testing.T) {
 	test := NewDynamoStore(testEnv)
 	key := "test"
 	title := "title"
-	recipes := []*scraper.Recipe{&scraper.Recipe{Title: title}}
+	recipes := []*models.Recipe{{Title: title}}
 	err := test.PutRecipes(key, recipes)
 	if err != nil {
 		log.Panic(err)

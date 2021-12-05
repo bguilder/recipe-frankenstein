@@ -2,13 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"frank_server/cache/dynamo"
 	"frank_server/postprocessor"
 	"frank_server/runner"
 	"frank_server/runner/allrecipes"
-	"frank_server/utils"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -60,7 +62,7 @@ func serve(router *mux.Router) {
 }
 
 func handleFeelingHungry(w http.ResponseWriter, r *http.Request) {
-	recipes := utils.OpenIngredients("./ingredients_fixtures/feeling_hungry.json")
+	recipes := OpenIngredients("./ingredients_fixtures/feeling_hungry.json")
 	payload, _ := json.Marshal(recipes)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(payload)
@@ -96,7 +98,7 @@ func handleExampleIngredients(w http.ResponseWriter, r *http.Request) {
 }
 
 func getExampleIngredients() []byte {
-	ingredients := utils.OpenIngredients("./ingredients_fixtures/empanada.json")
+	ingredients := OpenIngredients("./ingredients_fixtures/empanada.json")
 	postProcessor := postprocessor.NewPostProcessor()
 	formattedIngredients := postProcessor.Run(ingredients)
 	payload, err := json.Marshal(formattedIngredients)
@@ -104,4 +106,25 @@ func getExampleIngredients() []byte {
 		log.Println(err)
 	}
 	return payload
+}
+
+// opens a static file of ingredients
+// ../../ingredients_fixtures/empanada.json
+func OpenIngredients(file string) []string {
+	jsonFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Successfully Opened")
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var result []string
+	err = json.Unmarshal([]byte(byteValue), &result)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return result
 }

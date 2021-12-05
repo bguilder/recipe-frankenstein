@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"frank_server/models"
 	"frank_server/runner"
-	"frank_server/utils"
 	"log"
+	"strings"
 
 	"github.com/gocolly/colly"
 )
@@ -14,7 +14,7 @@ const baseUrl = "https://www.allrecipes.com"
 const searchPath = "/search/results/?search="
 
 func DefaultBuildSearchUrl(recipeName string) string {
-	return baseUrl + searchPath + utils.UrlFormat(recipeName)
+	return baseUrl + searchPath + formatUrlSpaces(recipeName)
 }
 
 type ArScraper struct {
@@ -50,15 +50,12 @@ func (s *ArScraper) GetLinks(url string, recipeCount int) map[string]struct{} {
 func (s *ArScraper) GetRecipes(recipeName string, recipeCount int) []*models.Recipe {
 	links := s.GetLinks(s.BuildSearchUrl(recipeName), recipeCount)
 
-	// TODO: don't hardcode me
-	result := make([]*models.Recipe, 0)
-
-	// TODO: we can run this concurrently
-	for url, _ := range links {
-		fmt.Printf("url: %s\n", url)
+	result := make([]*models.Recipe, recipeCount)
+	i := 0
+	// TODO: run this concurrently
+	for url := range links {
 		recipe := &models.Recipe{}
 		s.Collector.OnHTML("li, h1, span", func(e *colly.HTMLElement) {
-			fmt.Printf("here!! %s\n", e.Text)
 			if title := tryGetTitle(e); title != "" {
 				recipe.Title = title
 				return
@@ -86,7 +83,8 @@ func (s *ArScraper) GetRecipes(recipeName string, recipeCount int) []*models.Rec
 		// Start scraping
 		s.Collector.Visit(url)
 		s.Collector.Wait()
-		result = append(result, recipe)
+		result[i] = recipe
+		i++
 	}
 
 	return result
@@ -95,9 +93,9 @@ func (s *ArScraper) GetRecipes(recipeName string, recipeCount int) []*models.Rec
 // tryGetIngredient satisfies the source.IRecipe interface
 func tryGetIngredient(e *colly.HTMLElement) string {
 	if e.DOM.HasClass("ingredients-item-name") {
-		return utils.NormalizeString(e.Text)
+		return normalizeString(e.Text)
 	} else if e.DOM.HasClass("checkList__line") {
-		return utils.NormalizeString(e.Text)
+		return normalizeString(e.Text)
 	}
 	return ""
 }
@@ -105,7 +103,7 @@ func tryGetIngredient(e *colly.HTMLElement) string {
 // tryGetTitle satisfies the source.IRecipe interface
 func tryGetTitle(e *colly.HTMLElement) string {
 	if e.Name == "h1" {
-		return utils.NormalizeString(e.Text)
+		return normalizeString(e.Text)
 	}
 	return ""
 }
@@ -113,9 +111,27 @@ func tryGetTitle(e *colly.HTMLElement) string {
 // tryGetDirection satisfies the source.IRecipe interface
 func tryGetDirection(e *colly.HTMLElement) string {
 	if e.DOM.HasClass("recipe-directions__list--item") {
-		return utils.NormalizeString(e.Text)
+		return normalizeString(e.Text)
 	} else if e.DOM.HasClass("instructions-section-item") {
-		return utils.NormalizeString(e.Text)
+		return normalizeString(e.Text)
 	}
 	return ""
+}
+
+func formatUrlSpaces(s string) string {
+	return strings.Replace(s, " ", "%20", -1)
+}
+
+func normalizeString(s string) string {
+	return removeExtraSpacesAndNewlines(removeUnneededWords(s))
+}
+
+func removeUnneededWords(s string) string {
+	// TODO: make this a list of words
+	temp := strings.Replace(s, "Advertisement", "", -1)
+	return strings.Replace(temp, "Add all ingredients to list", "", -1)
+}
+
+func removeExtraSpacesAndNewlines(s string) string {
+	return strings.Replace(strings.Join(strings.Fields(s), " "), "\n", "", -1)
 }
