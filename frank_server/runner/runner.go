@@ -12,30 +12,25 @@ const defaultRecipeCount = 7
 
 // SearchRunner is the main runner
 type SearchRunner struct {
-	recipeName  string
-	recipeCount int
-	scraper     Scraper
-	cache       cache.Store
+	scraper Scraper
+	cache   cache.Store
 }
 
 // NewSearchRunner returns a new SearchRunner
-func NewSearchRunner(recipeName string, recipeCount int,
-	cache cache.Store, scraper Scraper) SearchRunner {
+func NewSearchRunner(cache cache.Store, scraper Scraper) SearchRunner {
 	return SearchRunner{
-		recipeName:  recipeName,
-		recipeCount: recipeCount,
-		scraper:     scraper,
-		cache:       cache,
+		scraper: scraper,
+		cache:   cache,
 	}
 }
 
 // Run searches for receipes
-func (r *SearchRunner) Run() models.RecipesView {
-	formattedRecipeName := strings.ToLower(r.recipeName)
+func (r *SearchRunner) Run(recipeName string, count int) models.RecipesView {
+	formattedRecipeName := strings.ToLower(recipeName)
 
 	// Set default max search recipes
-	if r.recipeCount > defaultRecipeCount || r.recipeCount <= 0 {
-		r.recipeCount = defaultRecipeCount
+	if count > defaultRecipeCount || count <= 0 {
+		count = defaultRecipeCount
 	}
 
 	recipes, err := r.cache.GetRecipes(formattedRecipeName)
@@ -50,7 +45,7 @@ func (r *SearchRunner) Run() models.RecipesView {
 
 	log.Println("cache miss...")
 
-	result := r.scraper.GetRecipes(formattedRecipeName, r.recipeCount)
+	result := r.scraper.GetRecipes(formattedRecipeName, count)
 
 	// update cache
 	err = r.cache.PutRecipes(formattedRecipeName, result)
