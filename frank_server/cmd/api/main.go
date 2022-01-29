@@ -1,13 +1,27 @@
 package main
 
 import (
-	resthandler "frank_server/handlers/rest"
+	"frank_server/cache/dynamo"
+	handler "frank_server/handler/http"
+	"frank_server/runner"
+	"frank_server/runner/allrecipes"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/gocolly/colly"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+)
+
+//  ---------------------- NOTE -------------------------
+// This http server is only used for local dev currently.
+// ------------------------------------------------------
+
+const (
+	env       = "local"
+	serverUrl = "0.0.0.0:8088"
+	clientUrl = "http://localhost:8080"
 )
 
 func main() {
@@ -21,13 +35,17 @@ func newRouter() *mux.Router {
 
 	// Allow CORS for specific origins
 	router.Use(handlers.CORS(
-		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
+		handlers.AllowedHeaders([]string{"Content-Type"}),
 		handlers.AllowedMethods([]string{"GET"}),
-		handlers.AllowedOrigins([]string{"http://localhost:8080", "localhost:8080"})),
+		handlers.AllowedOrigins([]string{clientUrl})),
 	)
 
-	router.Handle("/search", http.HandlerFunc(resthandler.Search))
-	router.Handle("/feelingHungry", http.HandlerFunc(resthandler.FeelingHungry))
+	searchRunner := runner.NewSearchRunner(
+		dynamo.NewDynamoStore(env),
+		allrecipes.NewAllRecipesScraper(colly.NewCollector(), allrecipes.DefaultBuildSearchUrl))
+
+	router.Handle("/search", http.HandlerFunc(handler.Search(searchRunner)))
+	router.Handle("/feelingHungry", http.HandlerFunc(handler.FeelingHungry))
 	return router
 }
 
@@ -35,7 +53,7 @@ func newRouter() *mux.Router {
 func serve(router *mux.Router) {
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         "0.0.0.0:8088",
+		Addr:         serverUrl,
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
