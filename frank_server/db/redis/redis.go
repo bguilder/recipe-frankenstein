@@ -3,7 +3,7 @@ package redis
 import (
 	"encoding/json"
 	"fmt"
-	"frank_server/cache"
+	"frank_server/db"
 	"frank_server/models"
 
 	"github.com/go-redis/redis/v7"
@@ -14,7 +14,7 @@ type redisCache struct {
 }
 
 // NewCache returns a new redis cache
-func NewCache() cache.Store {
+func NewCache() db.Store {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set

@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"frank_server/cache"
+	"frank_server/db"
 	"frank_server/models"
 	"frank_server/postprocessor"
 	"log"
@@ -13,11 +13,11 @@ const defaultRecipeCount = 7
 // SearchRunner is the main runner
 type SearchRunner struct {
 	scraper Scraper
-	cache   cache.Store
+	cache   db.Store
 }
 
 // NewSearchRunner returns a new SearchRunner
-func NewSearchRunner(cache cache.Store, scraper Scraper) SearchRunner {
+func NewSearchRunner(cache db.Store, scraper Scraper) SearchRunner {
 	return SearchRunner{
 		scraper: scraper,
 		cache:   cache,

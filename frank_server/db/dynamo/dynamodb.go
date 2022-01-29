@@ -1,7 +1,7 @@
 package dynamo
 
 import (
-	"frank_server/cache"
+	"frank_server/db"
 	"frank_server/models"
 	"log"
 
@@ -24,7 +24,7 @@ type RecipeDocument struct {
 	Recipes   []*models.Recipe
 }
 
-func NewDynamoStore(env string) cache.Store {
+func NewDynamoStore(env string) db.Store {
 	client := newDynamoClient(env)
 	return &dynamoStore{client: client}
 }

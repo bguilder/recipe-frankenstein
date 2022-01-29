@@ -1,4 +1,4 @@
-package cache
+package db
 
 import "frank_server/models"
 

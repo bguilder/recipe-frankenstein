@@ -1,7 +1,7 @@
 package lambda
 
 import (
-	"frank_server/cache/dynamo"
+	"frank_server/db/dynamo"
 	"frank_server/handler"
 	"frank_server/runner"
 	"frank_server/runner/allrecipes"

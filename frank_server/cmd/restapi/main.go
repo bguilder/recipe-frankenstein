@@ -1,7 +1,7 @@
 package main
 
 import (
-	"frank_server/cache/dynamo"
+	"frank_server/db/dynamo"
 	handler "frank_server/handler/http"
 	"frank_server/runner"
 	"frank_server/runner/allrecipes"
