@@ -7,15 +7,13 @@ import (
 	"frank_server/runner/allrecipes"
 	"log"
 	"os"
-
-	"github.com/gocolly/colly"
 )
 
 const recipeName = "chicken marsala"
 const numberOfRecipes = 2
 
 func main() {
-	scraper := allrecipes.NewAllRecipesScraper(colly.NewCollector(), allrecipes.DefaultBuildSearchUrl)
+	scraper := allrecipes.NewAllRecipesScraper()
 	recipes := scraper.GetRecipes(recipeName, numberOfRecipes)
 	for _, recipe := range recipes {
 		WriteToFile(recipe)

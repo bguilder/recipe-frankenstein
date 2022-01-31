@@ -5,34 +5,37 @@ import (
 	"frank_server/models"
 	"frank_server/runner"
 	"log"
+	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/gocolly/colly"
 )
 
-const baseUrl = "https://www.allrecipes.com"
+const baseURL = "https://www.allrecipes.com"
 const searchPath = "/search/results/?search="
 
-func DefaultBuildSearchUrl(recipeName string) string {
-	return baseUrl + searchPath + formatUrlSpaces(recipeName)
+// Scraper is an implementation of a runner.Scraper for the All Recipes website.
+type Scraper struct {
+	BuildSearchURL func(string) string
+	Transport      http.RoundTripper
+	mu             sync.Mutex
 }
 
-type ArScraper struct {
-	Collector      *colly.Collector
-	BuildSearchUrl func(string) string
+// NewAllRecipesScraper returns a new default instance of the AllRecipesScraper
+func NewAllRecipesScraper() runner.Scraper {
+	return &Scraper{BuildSearchURL: defaultBuildSearchURL, Transport: http.DefaultTransport}
 }
 
-func NewAllRecipesScraper(c *colly.Collector, buildSearchUrl func(string) string) runner.Scraper {
-	return &ArScraper{Collector: c, BuildSearchUrl: buildSearchUrl}
-}
+func (s *Scraper) GetLinks(url string, recipeCount int) map[string]struct{} {
 
-func (s *ArScraper) GetLinks(url string, recipeCount int) map[string]struct{} {
+	c := s.newCollector()
 
 	// use a map here to avoid duplicates
 	result := make(map[string]struct{})
 	i := 0
 
-	s.Collector.OnHTML(".card__titleLink", func(e *colly.HTMLElement) {
+	c.OnHTML(".card__titleLink", func(e *colly.HTMLElement) {
 		if i > recipeCount {
 			return
 		}
@@ -41,53 +44,93 @@ func (s *ArScraper) GetLinks(url string, recipeCount int) map[string]struct{} {
 		i++
 	})
 
-	s.Collector.Visit(url)
+	if err := c.Visit(url); err != nil {
+		panic(err)
+	}
 
-	s.Collector.Wait()
+	c.Wait()
+
 	return result
 }
 
-func (s *ArScraper) GetRecipes(recipeName string, recipeCount int) []*models.Recipe {
-	links := s.GetLinks(s.BuildSearchUrl(recipeName), recipeCount)
+func (s *Scraper) GetRecipes(recipeName string, recipeCount int) []*models.Recipe {
+	links := s.GetLinks(s.BuildSearchURL(recipeName), recipeCount)
 
-	result := make([]*models.Recipe, recipeCount)
-	i := 0
-	// TODO: run this concurrently
+	result := []*models.Recipe{}
+	wg := sync.WaitGroup{}
+
 	for url := range links {
-		recipe := &models.Recipe{}
-		s.Collector.OnHTML("li, h1, span", func(e *colly.HTMLElement) {
-			if title := tryGetTitle(e); title != "" {
-				recipe.Title = title
-				return
-			}
+		wg.Add(1)
 
-			if ingredient := tryGetIngredient(e); ingredient != "" {
-				recipe.AppendIngredient(ingredient)
-				return
-			}
+		go func(url string) {
+			defer wg.Done()
 
-			if direction := tryGetDirection(e); direction != "" {
-				recipe.AppendDirection(direction)
-				return
-			}
-		})
+			recipe := s.scrapeRecipePage(url)
 
-		s.Collector.OnError(func(_ *colly.Response, err error) {
-			log.Println("Error scraping:", err)
-		})
-
-		s.Collector.OnScraped(func(r *colly.Response) {
-			fmt.Printf("scraped\n")
-		})
-
-		// Start scraping
-		s.Collector.Visit(url)
-		s.Collector.Wait()
-		result[i] = recipe
-		i++
+			s.mu.Lock()
+			result = append(result, recipe)
+			s.mu.Unlock()
+		}(url)
 	}
 
+	wg.Wait()
+
 	return result
+}
+
+func defaultBuildSearchURL(recipeName string) string {
+	return baseURL + searchPath + formatUrlSpaces(recipeName)
+}
+
+func (s *Scraper) newCollector() *colly.Collector {
+	c := colly.NewCollector()
+	c.WithTransport(s.Transport)
+
+	return c
+}
+
+func (s *Scraper) scrapeRecipePage(url string) *models.Recipe {
+	c := s.newCollector()
+
+	recipe := &models.Recipe{}
+
+	c.OnHTML("li, h1, span", func(e *colly.HTMLElement) {
+		updateRecipeOnHtml(recipe, e)
+	})
+
+	c.OnError(func(_ *colly.Response, err error) {
+		log.Println("Error scraping:", err)
+	})
+
+	c.OnScraped(func(r *colly.Response) {
+		fmt.Printf("scraped\n")
+	})
+
+	// Start scraping
+	if err := c.Visit(url); err != nil {
+		panic(err)
+	}
+
+	c.Wait()
+
+	return recipe
+}
+
+func updateRecipeOnHtml(recipe *models.Recipe, e *colly.HTMLElement) {
+	if title := tryGetTitle(e); title != "" {
+		recipe.Title = title
+		return
+	}
+
+	if ingredient := tryGetIngredient(e); ingredient != "" {
+		recipe.AppendIngredient(ingredient)
+		return
+	}
+
+	if direction := tryGetDirection(e); direction != "" {
+		recipe.AppendDirection(direction)
+		return
+	}
 }
 
 // tryGetIngredient satisfies the source.IRecipe interface
@@ -97,6 +140,7 @@ func tryGetIngredient(e *colly.HTMLElement) string {
 	} else if e.DOM.HasClass("checkList__line") {
 		return normalizeString(e.Text)
 	}
+
 	return ""
 }
 
@@ -105,6 +149,7 @@ func tryGetTitle(e *colly.HTMLElement) string {
 	if e.Name == "h1" {
 		return normalizeString(e.Text)
 	}
+
 	return ""
 }
 
@@ -115,11 +160,12 @@ func tryGetDirection(e *colly.HTMLElement) string {
 	} else if e.DOM.HasClass("instructions-section-item") {
 		return normalizeString(e.Text)
 	}
+
 	return ""
 }
 
 func formatUrlSpaces(s string) string {
-	return strings.Replace(s, " ", "%20", -1)
+	return strings.ReplaceAll(s, " ", "%20")
 }
 
 func normalizeString(s string) string {
@@ -128,10 +174,10 @@ func normalizeString(s string) string {
 
 func removeUnneededWords(s string) string {
 	// TODO: make this a list of words
-	temp := strings.Replace(s, "Advertisement", "", -1)
-	return strings.Replace(temp, "Add all ingredients to list", "", -1)
+	temp := strings.ReplaceAll(s, "Advertisement", "")
+	return strings.ReplaceAll(temp, "Add all ingredients to list", "")
 }
 
 func removeExtraSpacesAndNewlines(s string) string {
-	return strings.Replace(strings.Join(strings.Fields(s), " "), "\n", "", -1)
+	return strings.ReplaceAll(strings.Join(strings.Fields(s), " "), "\n", "")
 }

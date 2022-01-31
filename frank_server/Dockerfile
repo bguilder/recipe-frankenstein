@@ -6,7 +6,7 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o /run_server ./cmd/api
+RUN go build -o /run_server ./cmd/restapi
 
 EXPOSE 8088
 

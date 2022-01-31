@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gocolly/colly"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -42,7 +41,7 @@ func newRouter() *mux.Router {
 
 	searchRunner := runner.NewSearchRunner(
 		dynamo.NewDynamoStore(env),
-		allrecipes.NewAllRecipesScraper(colly.NewCollector(), allrecipes.DefaultBuildSearchUrl))
+		allrecipes.NewAllRecipesScraper())
 
 	router.Handle("/search", http.HandlerFunc(handler.Search(searchRunner)))
 	router.Handle("/feelingHungry", http.HandlerFunc(handler.FeelingHungry))

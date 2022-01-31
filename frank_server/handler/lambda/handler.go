@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/gocolly/colly"
 )
 
 const (
@@ -49,7 +48,7 @@ func HandleSearch(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 
 	runner := runner.NewSearchRunner(
 		cacheStore,
-		allrecipes.NewAllRecipesScraper(colly.NewCollector(), allrecipes.DefaultBuildSearchUrl))
+		allrecipes.NewAllRecipesScraper())
 
 	recipes := runner.Run(recipeName, recipeCount)
 
